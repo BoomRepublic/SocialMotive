@@ -1,0 +1,228 @@
+{
+  "contacts": [
+    {
+      "ContactId": 2,
+      "name": "Aria Evers-Lam",
+      "status": null,
+      "phone": "+31655530737",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 3,
+      "name": "Arno de Bruijn",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31654776142",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 20,
+      "name": "Astrid",
+      "status": null,
+      "phone": "+31612887322",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 21,
+      "name": "Elly Strik",
+      "status": "Nieuwe telefoon, whatsappgeschiedenis verdwenen.",
+      "phone": "+31612029642",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 22,
+      "name": "Fred",
+      "status": null,
+      "phone": "+31622536527",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 5,
+      "name": "Herman Waaijenberg",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31612910932",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 6,
+      "name": "Hilda Lubben",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31653612916",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 7,
+      "name": "Ingrid",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31651976666",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 16,
+      "name": "Jack Kroon",
+      "status": null,
+      "phone": null,
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 17,
+      "name": "Klaas Feenstra SO",
+      "status": "Altijd in voor een goed gesprek 😎",
+      "phone": null,
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 23,
+      "name": "Lydia van den Berg",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31618465544",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 24,
+      "name": "Margriet de Greef",
+      "status": "Goeiedag 🌍",
+      "phone": "+31612327289",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 25,
+      "name": "Marian",
+      "status": null,
+      "phone": "+31642396291",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 8,
+      "name": "Martha",
+      "status": "🍀BBB🍀",
+      "phone": "+31614343931",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 26,
+      "name": "Monique Harinck",
+      "status": null,
+      "phone": "+31621447368",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 9,
+      "name": "Monique Peters",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31623474027",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 27,
+      "name": "Muisje",
+      "status": null,
+      "phone": "+31654742636",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 10,
+      "name": "Paula",
+      "status": "Beschikbaar",
+      "phone": "+31654637473",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 18,
+      "name": "Peter Fijvandraat SO",
+      "status": null,
+      "phone": null,
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 28,
+      "name": "Rijanne",
+      "status": null,
+      "phone": "+31643926254",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 11,
+      "name": "Ria",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31681315786",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 19,
+      "name": "Rob So",
+      "status": null,
+      "phone": null,
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 12,
+      "name": "Sandra",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31650834998",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 13,
+      "name": "silvia beentjes",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31623546500",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 29,
+      "name": "tessa",
+      "status": "Hey there! I am using WhatsApp.",
+      "phone": "+31611191908",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 14,
+      "name": "Tom Van der Wind",
+      "status": null,
+      "phone": "+31621495345",
+      "moved": false,
+      "pendelbus": true
+    },
+    {
+      "ContactId": 30,
+      "name": "YvE",
+      "status": null,
+      "phone": "+31648560173",
+      "moved": true,
+      "pendelbus": null
+    },
+    {
+      "ContactId": 15,
+      "name": "Anton De Vries",
+      "status": null,
+      "phone": null,
+      "moved": true,
+      "pendelbus": null
+    }
+  ]
+}
