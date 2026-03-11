@@ -1,0 +1,43 @@
+  Determining projects to restore...
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv [C:\Repos\SocialMotive\SocialMotive.sln]
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj [C:\Repos\SocialMotive\SocialMotive.sln]
+  All projects are up-to-date for restore.
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj
+  SocialMotive.Core -> C:\Repos\SocialMotive\src\SocialMotive.Core\bin\Debug\net10.0\SocialMotive.Core.dll
+  SocialMotive.TrekkerGenerator.Core -> C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Core\bin\Debug\net10.0\SocialMotive.TrekkerGenerator.Core.dll
+  [Telerik and Kendo UI Licensing]
+        Your Telerik UI for Blazor subscription is active. Expiration in 121 days.
+  [Telerik and Kendo UI Licensing]
+        Your Telerik Document Processing Libraries subscription is active. Expiration in 121 days.
+  [Telerik and Kendo UI Licensing]
+        Your Telerik UI for Blazor subscription is active. Expiration in 121 days.
+  [Telerik and Kendo UI Licensing]
+        Your Telerik Document Processing Libraries subscription is active. Expiration in 121 days.
+  [Telerik and Kendo UI Licensing]
+        Your Telerik UI for Blazor subscription is active. Expiration in 121 days.
+  [Telerik and Kendo UI Licensing]
+        Your Telerik Document Processing Libraries subscription is active. Expiration in 121 days.
+C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\Components\Routes.razor(9,9): warning RZ10012: Found markup element with unexpected name 'PageTitle'. If this is intended to be a component, add a @using directive for its namespace. [C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\SocialMotive.TrekkerGenerator.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\Program.cs(3,43): error CS0234: The type or namespace name 'OpenIdConnect' does not exist in the namespace 'Microsoft.AspNetCore.Authentication' (are you missing an assembly reference?) [C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\SocialMotive.TrekkerGenerator.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\Components\Routes.razor(9,9): warning RZ10012: Found markup element with unexpected name 'PageTitle'. If this is intended to be a component, add a @using directive for its namespace. [C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\Program.cs(3,43): error CS0234: The type or namespace name 'OpenIdConnect' does not exist in the namespace 'Microsoft.AspNetCore.Authentication' (are you missing an assembly reference?) [C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\Components\Routes.razor(9,9): warning RZ10012: Found markup element with unexpected name 'PageTitle'. If this is intended to be a component, add a @using directive for its namespace. [C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\SocialMotive.Frontend.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\Program.cs(3,43): error CS0234: The type or namespace name 'OpenIdConnect' does not exist in the namespace 'Microsoft.AspNetCore.Authentication' (are you missing an assembly reference?) [C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\SocialMotive.Frontend.Web.csproj]
+
+Build FAILED.
+
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv [C:\Repos\SocialMotive\SocialMotive.sln]
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj [C:\Repos\SocialMotive\SocialMotive.sln]
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-f32c-w444-8ppv
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj : warning NU1903: Package 'System.IO.Packaging' 6.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj
+C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\Components\Routes.razor(9,9): warning RZ10012: Found markup element with unexpected name 'PageTitle'. If this is intended to be a component, add a @using directive for its namespace. [C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\SocialMotive.TrekkerGenerator.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\Components\Routes.razor(9,9): warning RZ10012: Found markup element with unexpected name 'PageTitle'. If this is intended to be a component, add a @using directive for its namespace. [C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\Components\Routes.razor(9,9): warning RZ10012: Found markup element with unexpected name 'PageTitle'. If this is intended to be a component, add a @using directive for its namespace. [C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\SocialMotive.Frontend.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\Program.cs(3,43): error CS0234: The type or namespace name 'OpenIdConnect' does not exist in the namespace 'Microsoft.AspNetCore.Authentication' (are you missing an assembly reference?) [C:\Repos\SocialMotive\src\SocialMotive.TrekkerGenerator.Web\SocialMotive.TrekkerGenerator.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\Program.cs(3,43): error CS0234: The type or namespace name 'OpenIdConnect' does not exist in the namespace 'Microsoft.AspNetCore.Authentication' (are you missing an assembly reference?) [C:\Repos\SocialMotive\src\SocialMotive.AdminBackend.Web\SocialMotive.AdminBackend.Web.csproj]
+C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\Program.cs(3,43): error CS0234: The type or namespace name 'OpenIdConnect' does not exist in the namespace 'Microsoft.AspNetCore.Authentication' (are you missing an assembly reference?) [C:\Repos\SocialMotive\src\SocialMotive.Frontend.Web\SocialMotive.Frontend.Web.csproj]
+    7 Warning(s)
+    3 Error(s)
+
+Time Elapsed 00:00:05.16
