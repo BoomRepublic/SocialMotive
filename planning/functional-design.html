@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocialMotive Platform - Functional Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            margin: -20px -20px 40px -20px;
+            border-radius: 0 0 10px 10px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .toc-container {
+            background-color: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+
+        .toc-container h2 {
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 1.3em;
+        }
+
+        .toc-container ul {
+            list-style: none;
+        }
+
+        .toc-container li {
+            margin: 8px 0;
+        }
+
+        .toc-container a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .toc-container a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .toc-container ul ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .toc-container ul ul a {
+            font-size: 0.95em;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #222;
+        }
+
+        h1 {
+            font-size: 2em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.6em;
+            color: #667eea;
+            margin-top: 40px;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            color: #555;
+        }
+
+        h4 {
+            font-size: 1.1em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: #222;
+            font-weight: 600;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        pre code {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            color: #d4d4d4;
+        }
+
+        blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin: 20px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .feature-box {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .feature-box h4 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        .api-endpoint {
+            background-color: #f0f8ff;
+            border-left: 3px solid #667eea;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+
+        .api-endpoint.get { border-left-color: #28a745; background-color: #f0fff4; }
+        .api-endpoint.post { border-left-color: #007bff; background-color: #f0f8ff; }
+        .api-endpoint.put { border-left-color: #ffc107; background-color: #fffbf0; }
+        .api-endpoint.delete { border-left-color: #dc3545; background-color: #fff5f5; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        .back-to-top {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .back-to-top:hover {
+            text-decoration: underline;
+        }
+
+        .appendix {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 40px;
+        }
+
+        .json-example {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            header {
+                padding: 40px 10px;
+                margin: -10px -10px 30px -10px;
+            }
+            header h1 {
+                font-size: 1.8em;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+            h3 {
+                font-size: 1.1em;
+            }
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        @media print {
+            header {
+                page-break-after: avoid;
+            }
+            .toc-container {
+                page-break-after: avoid;
+            }
+            h2 {
+                page-break-before: always;
+                page-break-after: avoid;
+            }
+            h3, h4 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SocialMotive Platform</h1>
+            <p>Functional Design Document</p>
+        </header>
+
+        <div class="toc-container">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#section1">1. SocialMotive.Frontend.Web (Volunteer Portal)</a>
+                    <ul>
+                        <li><a href="#section1-1">1.1 Core Users</a></li>
+                        <li><a href="#section1-2">1.2 Main Features (MVP)</a></li>
+                        <li><a href="#section1-3">1.3 API Endpoints</a></li>
+                        <li><a href="#section1-4">1.4 Key Business Rules</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section2">2. SocialMotive.TrekkerGenerator.Web (Promo Canvas Editor)</a>
+                    <ul>
+                        <li><a href="#section2-1">2.1 Core User</a></li>
+                        <li><a href="#section2-2">2.2 Main Features (MVP)</a></li>
+                        <li><a href="#section2-3">2.3 API Endpoints</a></li>
+                        <li><a href="#section2-4">2.4 Canvas Document Structure</a></li>
+                        <li><a href="#section2-5">2.5 Key Business Rules</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section3">3. SocialMotive.AdminBackend.Web (Data Management)</a>
+                    <ul>
+                        <li><a href="#section3-1">3.1 Core User</a></li>
+                        <li><a href="#section3-2">3.2 Main Features (MVP)</a></li>
+                        <li><a href="#section3-3">3.3 API Endpoints</a></li>
+                        <li><a href="#section3-4">3.4 Whitelisted Tables</a></li>
+                        <li><a href="#section3-5">3.5 Key Business Rules</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section4">4. Cross-App Workflows</a></li>
+                <li><a href="#section5">5. Data Flow & Consistency</a></li>
+                <li><a href="#section6">6. Error Handling & Validation</a></li>
+                <li><a href="#section7">7. Performance Expectations</a></li>
+                <li><a href="#section8">8. Security Considerations</a></li>
+                <li><a href="#section9">9. Deployment & Configuration</a></li>
+                <li><a href="#appendix">Appendix: Key Terminology</a></li>
+            </ul>
+        </div>
+
+        <div class="section" id="section1">
+            <h2>1. SocialMotive.Frontend.Web (Volunteer Portal)</h2>
+            
+            <div id="section1-1" class="subsection">
+                <h3>1.1 Core Users</h3>
+                <ul>
+                    <li><strong>Volunteer</strong>: searches, registers, attends events, tracks hours</li>
+                    <li><strong>Organizer</strong>: creates events, manages volunteers, tracks impact</li>
+                    <li><strong>Both roles</strong>: own profile, connections, ratings/reviews (v2+)</li>
+                </ul>
+            </div>
+
+            <div id="section1-2" class="subsection">
+                <h3>1.2 Main Features (MVP)</h3>
+
+                <h4>1.2.1 Authentication & User Management</h4>
+                <ul>
+                    <li><strong>Flow</strong>: SSO redirect → OIDC provider → callback → create/update local User</li>
+                    <li><strong>User Profile Screen</strong>:
+                        <ul>
+                            <li>View/edit: firstName, lastName, email, profileImage, bio, phone</li>
+                            <li>Display: joined date, hours logged, events attended</li>
+                            <li>Role indicator (Volunteer / Organizer / Admin)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Sign In</strong>: SSO login button (OIDC redirect)</li>
+                    <li><strong>Sign Out</strong>: clear local auth, OIDC signout</li>
+                </ul>
+
+                <h4>1.2.2 Event Discovery (Volunteer Dashboard)</h4>
+                <ul>
+                    <li><strong>Event List Screen</strong>:
+                        <ul>
+                            <li>Query: <code>GET /api/dashboard/events</code> (filtered, paged)</li>
+                            <li>Display: Event cards (title, date, organizer, location, skill tags, volunteers needed)</li>
+                            <li>Filters: Date range, location, skill required, search text</li>
+                            <li>Sorting: nearest date, most popular, newest</li>
+                            <li>Pagination: 10 items/page</li>
+                        </ul>
+                    </li>
+                    <li><strong>Event Detail Screen</strong>:
+                        <ul>
+                            <li>Full event info: description, schedule, tasks, location, map</li>
+                            <li>Organizer card: name, photo, rating, past events</li>
+                            <li>Task list: required tasks + sign-up button per task</li>
+                            <li>Volunteer list (anonymized): count + avatars</li>
+                            <li>Action buttons: "Register", "Share", "Save" (v2+)</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>1.2.3 Event Registration</h4>
+                <ul>
+                    <li><strong>Registration Flow</strong>:
+                        <ul>
+                            <li><code>POST /api/dashboard/events/{eventId}/register</code></li>
+                            <li>Volunteer selects task(s) → confirm → create EventParticipant record</li>
+                            <li>Success: "You're registered! Check email for details"</li>
+                        </ul>
+                    </li>
+                    <li><strong>My Events Screen</strong>:
+                        <ul>
+                            <li>Upcoming: events user is registered for (with status)</li>
+                            <li>Past: completed events (with hours, rating option)</li>
+                            <li>Action: view details, "Mark Complete", rate organizer</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>1.2.4 Hours Tracking</h4>
+                <ul>
+                    <li><strong>For Volunteers</strong>:
+                        <ul>
+                            <li>View: total hours logged (summary on profile)</li>
+                            <li>Organizer marks hours after event → volunteer sees update</li>
+                        </ul>
+                    </li>
+                    <li><strong>For Organizers</strong>:
+                        <ul>
+                            <li>View event participants + manual hour entry</li>
+                            <li><code>POST /api/dashboard/events/{eventId}/participants/{participantId}/log-hours</code></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>1.2.5 Notifications (v1 basic, full v2+)</h4>
+                <ul>
+                    <li><strong>v1 MVP</strong>: No real-time, but email/redirect on registration success</li>
+                    <li><strong>v2+ planned</strong>: Push notifications, in-app bell icon, notification center</li>
+                </ul>
+            </div>
+
+            <div id="section1-3" class="subsection">
+                <h3>1.3 API Endpoints (Frontend context)</h3>
+                <pre class="json-example">Authentication (via OIDC, no explicit API endpoints)
+GET  /signin-oidc → OIDC callback
+GET  /signout-oidc → Logout
+
+Dashboard
+GET  /api/dashboard/user-profile         → UserProfileDto
+GET  /api/dashboard/events               → PagedResponseDto&lt;EventDto&gt;
+GET  /api/dashboard/events/{eventId}     → EventDetailDto
+GET  /api/dashboard/my-events            → PagedResponseDto&lt;EventDto&gt;
+
+Registration
+POST /api/dashboard/events/{eventId}/register
+  Body: { taskIds: int[] }
+  → EventParticipantDto
+
+Hours
+POST /api/dashboard/events/{eventId}/participants/{participantId}/log-hours
+  Body: { hoursWorked: decimal, notes: string }
+  → EventParticipantDto
+
+Ratings (v2+)
+POST /api/dashboard/events/{eventId}/rate
+  Body: { rating: int, review: string }</pre>
+            </div>
+
+            <div id="section1-4" class="subsection">
+                <h3>1.4 Key Business Rules</h3>
+                <ul>
+                    <li>Volunteer can register for only 1 task per event</li>
+                    <li>Max participants per task cannot be exceeded</li>
+                    <li>Organizer must manually approve (or auto-approve) before participant is final</li>
+                    <li>Hours logged only by organizer or trusted admin</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section" id="section2">
+            <h2>2. SocialMotive.TrekkerGenerator.Web (Promo Canvas Editor)</h2>
+
+            <div id="section2-1" class="subsection">
+                <h3>2.1 Core User</h3>
+                <ul>
+                    <li><strong>Organizer</strong>: creates promotional images for events (posters, social media)</li>
+                </ul>
+            </div>
+
+            <div id="section2-2" class="subsection">
+                <h3>2.2 Main Features (MVP)</h3>
+
+                <h4>2.2.1 Canvas Workspace</h4>
+                <ul>
+                    <li><strong>Canvas Editor Page</strong>:
+                        <ul>
+                            <li>Left sidebar: layer panel (list of text/image layers, add/remove/reorder)</li>
+                            <li>Center: WYSIWYG canvas (drag, resize, rotate layers)</li>
+                            <li>Right sidebar: style controls (font, color, opacity, alignment)</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>2.2.2 Layer Management</h4>
+                <ul>
+                    <li><strong>Add Layer</strong>:
+                        <ul>
+                            <li>"Add Text" → text input, default font/size/color</li>
+                            <li>"Add Image" → file upload or URL, dimensions</li>
+                            <li>Each layer: name, type, x/y/width/height, rotation, opacity, z-index, visibility toggle</li>
+                        </ul>
+                    </li>
+                    <li><strong>Manage Layer</strong>:
+                        <ul>
+                            <li>Drag to reorder z-order</li>
+                            <li>Click to select & show style controls</li>
+                            <li>Delete, duplicate, lock/unlock (v2+)</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>2.2.3 Text Styling</h4>
+                <ul>
+                    <li><strong>Controls</strong>:
+                        <ul>
+                            <li>Font family (dropdown: Arial, Georgia, custom Google Fonts in v2+)</li>
+                            <li>Font size (px, input field)</li>
+                            <li>Font weight (bold/normal/light selector)</li>
+                            <li>Color (color picker, hex input)</li>
+                            <li>Alignment (left/center/right buttons)</li>
+                            <li>Line height (spacing slider)</li>
+                            <li>Shadow/outline (optional, advanced v2+)</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>2.2.4 Background/Assets</h4>
+                <ul>
+                    <li><strong>Upload Background Image</strong>:
+                        <ul>
+                            <li><code>POST /api/assets/upload</code></li>
+                            <li>Accept: PNG, JPG, WebP</li>
+                            <li>Store: server-side path or blob URL</li>
+                            <li>Display: on canvas as bottom layer</li>
+                        </ul>
+                    </li>
+                    <li><strong>Transparent PNG Support</strong>:
+                        <ul>
+                            <li>Preserve alpha channel in export</li>
+                            <li>Show checkerboard behind transparent areas in canvas</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>2.2.5 Canvas Size & Export</h4>
+                <ul>
+                    <li><strong>Canvas Preset</strong>:
+                        <ul>
+                            <li>Dropdown: Social Media sizes (Instagram 1080×1080, LinkedIn 1200×627, etc.)</li>
+                            <li>Custom: width/height input</li>
+                        </ul>
+                    </li>
+                    <li><strong>Export PNG</strong>:
+                        <ul>
+                            <li><code>POST /api/render</code></li>
+                            <li>Input: canvas document state (layers, positions, styles)</li>
+                            <li>Output: PNG blob (transparent or white background option)</li>
+                            <li>Download as: <code>EventName_Poster_[timestamp].png</code></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>2.2.6 Template Save/Load</h4>
+                <ul>
+                    <li><strong>Save Template</strong>:
+                        <ul>
+                            <li><code>POST /api/templates</code></li>
+                            <li>Input: name, canvas document (JSON)</li>
+                            <li>Create Template record</li>
+                        </ul>
+                    </li>
+                    <li><strong>Load Template</strong>:
+                        <ul>
+                            <li>Dropdown: "My Templates" list</li>
+                            <li>Select → populate canvas from template</li>
+                        </ul>
+                    </li>
+                    <li><strong>Template Management</strong>:
+                        <ul>
+                            <li>List screen: name, thumbnail, date created, actions (load, rename, delete)</li>
+                            <li><code>GET /api/templates</code></li>
+                            <li><code>PUT /api/templates/{id}</code></li>
+                            <li><code>DELETE /api/templates/{id}</code></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="section2-3" class="subsection">
+                <h3>2.3 API Endpoints (TrekkerGenerator context)</h3>
+                <pre class="json-example">Assets
+POST /api/assets/upload                       → AssetDto
+GET  /api/assets/{assetId}
+DELETE /api/assets/{assetId}
+
+Templates
+GET  /api/templates                           → PagedResponseDto&lt;TemplateSummaryDto&gt;
+GET  /api/templates/{id}                      → TemplateDetailDto
+POST /api/templates                           → TemplateSummaryDto
+PUT  /api/templates/{id}                      → TemplateDetailDto
+DELETE /api/templates/{id}
+
+Render/Export
+POST /api/render                              → PNG blob (or RenderResultDto)
+  Body: { canvasDocument: CanvasDocumentDto, exportOptions: ExportOptionsDto }
+
+AI Generation (v2+, placeholder)
+POST /api/ai/generate-image
+  Body: { prompt: string, style: string }
+  → AiGenerationResponseDto</pre>
+            </div>
+
+            <div id="section2-4" class="subsection">
+                <h3>2.4 Canvas Document Structure (Internal JSON)</h3>
+                <pre class="json-example">{
+  "canvasId": "uuid",
+  "name": "Event Poster 2026",
+  "width": 1080,
+  "height": 1080,
+  "backgroundColor": "#ffffff",
+  "layers": [
+    {
+      "layerId": "uuid",
+      "type": "image",
+      "name": "Background",
+      "assetId": "uuid",
+      "x": 0,
+      "y": 0,
+      "width": 1080,
+      "height": 1080,
+      "rotation": 0,
+      "opacity": 1.0,
+      "zIndex": 0,
+      "isVisible": true
+    },
+    {
+      "layerId": "uuid",
+      "type": "text",
+      "name": "Event Title",
+      "text": "Volunteer Day 2026",
+      "fontFamily": "Arial",
+      "fontSize": 48,
+      "fontWeight": "bold",
+      "color": "#ffffff",
+      "alignment": "center",
+      "x": 100,
+      "y": 400,
+      "width": 880,
+      "height": 100,
+      "rotation": 0,
+      "opacity": 1.0,
+      "zIndex": 1,
+      "isVisible": true
+    }
+  ],
+  "createdUtc": "2026-03-11T10:00:00Z",
+  "updatedUtc": "2026-03-11T10:15:00Z"
+}</pre>
+            </div>
+
+            <div id="section2-5" class="subsection">
+                <h3>2.5 Key Business Rules</h3>
+                <ul>
+                    <li>Canvas must have 1+ layers</li>
+                    <li>Text max length: 500 chars</li>
+                    <li>Image max size: 50 MB</li>
+                    <li>Export max resolution: 4000×4000 px</li>
+                    <li>Template name max: 100 chars</li>
+                    <li>User can have max 50 templates (v1, increase in v2)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section" id="section3">
+            <h2>3. SocialMotive.AdminBackend.Web (Data Management)</h2>
+
+            <div id="section3-1" class="subsection">
+                <h3>3.1 Core User</h3>
+                <ul>
+                    <li><strong>Admin</strong>: browse, search, create, update, delete records across both databases</li>
+                </ul>
+            </div>
+
+            <div id="section3-2" class="subsection">
+                <h3>3.2 Main Features (MVP)</h3>
+
+                <h4>3.2.1 Table Listing & Discovery</h4>
+                <ul>
+                    <li><strong>Table Browser Screen</strong>:
+                        <ul>
+                            <li>Left sidebar: database selector (SocialMotive / TrekkerGenerator)</li>
+                            <li>Main: table list (all user tables, exclude system tables)</li>
+                            <li>Per table: row count, last modified, actions (view, export)
+                                <ul>
+                                    <li>Whitelisted tables only (e.g., NOT <code>sys.*</code>, NOT sensitive internal tables)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>3.2.2 Data Grid & CRUD</h4>
+                <ul>
+                    <li><strong>Grid Screen</strong> (per table):
+                        <ul>
+                            <li>Telerik editable grid with columns from metadata</li>
+                            <li>Features:
+                                <ul>
+                                    <li><strong>Paging</strong>: 25 rows/page, configurable</li>
+                                    <li><strong>Sorting</strong>: multi-column sort</li>
+                                    <li><strong>Filtering</strong>: column-based, operator dropdowns (equals, contains, greater than, etc.)</li>
+                                    <li><strong>Inline Edit</strong>: double-click cell → inline editor (text, date picker, dropdown based on column type)</li>
+                                    <li><strong>Row Actions</strong>:
+                                        <ul>
+                                            <li>Edit details (full form popup)</li>
+                                            <li>Delete (confirm dialog)</li>
+                                            <li>Duplicate (v2+)</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><strong>Create New Row</strong>:
+                                <ul>
+                                    <li>Button "Add Row" → blank row at bottom OR popup form</li>
+                                    <li>Form: all columns, required field validation</li>
+                                    <li>Submit → <code>POST /api/admin/crud/[TableName]</code></li>
+                                </ul>
+                            </li>
+                            <li><strong>Bulk Actions</strong> (v2+):
+                                <ul>
+                                    <li>Select checkboxes → Delete Selected, Export Selected</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>3.2.3 Table Metadata & Validation</h4>
+                <ul>
+                    <li><strong>Metadata API</strong> (internal):
+                        <ul>
+                            <li><code>GET /api/admin/metadata/tables</code> → list of TableDescriptorDto</li>
+                            <li>Per table: column list (name, type, nullable, pk, fk, max length)</li>
+                            <li>Per column: editor type (text, number, date, dropdown, toggle)</li>
+                            <li>Dropdowns auto-populated from FK relations (e.g., CategoryId dropdown loads categories)</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>3.2.4 Export</h4>
+                <ul>
+                    <li><strong>Export Grid Data</strong>:
+                        <ul>
+                            <li>Button: "Export" → format selector (CSV, Excel)</li>
+                            <li>Action: <code>POST /api/admin/export</code></li>
+                            <li>Output: CSV/XLSX file download with current filters applied</li>
+                            <li>Columns: all visible columns in grid</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>3.2.5 Audit Logging</h4>
+                <ul>
+                    <li><strong>Audit Log Screen</strong> (optional v1, likely v2+):
+                        <ul>
+                            <li>Table: Admin → Admin Activity</li>
+                            <li>Columns: user, table, operation (INSERT/UPDATE/DELETE), timestamp, old values, new values</li>
+                            <li>Search: by user, date range, table, operation type</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="section3-3" class="subsection">
+                <h3>3.3 API Endpoints (Admin context)</h3>
+                <pre class="json-example">Metadata
+GET  /api/admin/metadata/tables               → TableListResponseDto
+GET  /api/admin/metadata/tables/{name}        → TableDescriptorDto
+GET  /api/admin/metadata/columns/{table}      → ColumnDescriptorDto[]
+
+CRUD
+GET  /api/admin/crud/{tableName}              → GridDataResponseDto&lt;RowDto&gt;
+  Query: ?page=1&pageSize=25&sort=Name desc&filter=Status eq 'Active'
+POST /api/admin/crud/{tableName}              → RowDto
+  Body: { field1: value1, field2: value2 }
+PUT  /api/admin/crud/{tableName}/{id}         → RowDto
+  Body: { field1: newValue1 }
+DELETE /api/admin/crud/{tableName}/{id}
+
+Export
+POST /api/admin/export                        → file blob (CSV/XLSX)
+  Body: { tableName: string, format: 'csv'|'xlsx', filters: ... }
+
+Audit (v2+ likely)
+GET  /api/admin/audit-log                     → PagedResponseDto&lt;AuditLogDto&gt;
+  Query: ?tableName=Users&userId=uuid&startDate=...</pre>
+            </div>
+
+            <div id="section3-4" class="subsection">
+                <h3>3.4 Whitelisted Tables (Example)</h3>
+                <p><strong>SocialMotive DB:</strong></p>
+                <ul>
+                    <li>Users, Trackers, TrackerRoles, Groups, Labels, Cities</li>
+                    <li>Events, EventTypes, EventTasks, EventParticipants</li>
+                    <li>AuditLogs (admin-only)</li>
+                    <li>Settings (admin-only)</li>
+                </ul>
+                <p><strong>TrekkerGenerator DB:</strong></p>
+                <ul>
+                    <li>Users (SSO users), Templates, Assets</li>
+                    <li>NOT: Layers, RenderJobs (internal/transient, v2+ could expose)</li>
+                </ul>
+                <p><strong>NOT whitelisted (hidden from admin):</strong></p>
+                <ul>
+                    <li>Any <code>sys.*</code> tables</li>
+                    <li>Any internal/shadow tables (v2+ will refine)</li>
+                </ul>
+            </div>
+
+            <div id="section3-5" class="subsection">
+                <h3>3.5 Key Business Rules</h3>
+                <ul>
+                    <li>Admin can CRUD only whitelisted tables</li>
+                    <li>DELETE cascades apply per DB schema (e.g., deleting User cascades to templates/assets)</li>
+                    <li>Audit log auto-created per mutation (user, table, operation, timestamp, old/new values)</li>
+                    <li>File exports limited to 100k rows (v1), streaming in v2+</li>
+                    <li>Admin role checked via SSO claims (upstream defines who is admin)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section" id="section4">
+            <h2>4. Cross-App Workflows</h2>
+
+            <h3>4.1 Event Promotion Flow</h3>
+            <ol>
+                <li><strong>Organizer</strong> creates event in Frontend (existing system flow)</li>
+                <li><strong>Organizer</strong> opens TrekkerGenerator to design poster</li>
+                <li><strong>Organizer</strong> uploads event image or uses template</li>
+                <li><strong>Organizer</strong> styles text (event name, date, "Register Now!")</li>
+                <li><strong>Organizer</strong> exports PNG → downloads poster</li>
+                <li><strong>Organizer</strong> shares poster on social media (manual, v2+ auto-share)</li>
+                <li><strong>Volunteer</strong> sees event in Frontend, registers</li>
+            </ol>
+
+            <h3>4.2 Data Governance Flow</h3>
+            <ol>
+                <li><strong>Admin</strong> logs in → AdminBackend</li>
+                <li><strong>Admin</strong> browses Users table → filters by signup date</li>
+                <li><strong>Admin</strong> exports active users as CSV for outreach campaign</li>
+                <li><strong>Admin</strong> notices spam user → clicks Delete → audit logged</li>
+                <li><strong>Admin</strong> views audit log to confirm deletion + who did it</li>
+            </ol>
+
+            <h3>4.3 Profile Update Flow</h3>
+            <ol>
+                <li><strong>Volunteer</strong> logs in → Frontend</li>
+                <li><strong>Volunteer</strong> clicks "Edit Profile"</li>
+                <li><strong>Volunteer</strong> updates bio/skills</li>
+                <li><strong>System</strong> sanitizes input, validates</li>
+                <li><strong>System</strong> updates Users table (via API service)</li>
+                <li><strong>Admin</strong> (optional) sees change in audit log</li>
+            </ol>
+        </div>
+
+        <div class="section" id="section5">
+            <h2>5. Data Flow & Consistency</h2>
+
+            <h3>5.1 Frontend ↔ API Service ↔ Controller</h3>
+            <ul>
+                <li>All Blazor components call API services (no direct DB access)</li>
+                <li>API services call controllers via HttpClient</li>
+                <li>Controllers call Core/Application logic (repositories, use-cases)</li>
+                <li>Returns DTOs only (no entity objects over HTTP)</li>
+            </ul>
+
+            <h3>5.2 SSO User Synchronization</h3>
+            <ul>
+                <li>User lands on SocialMotive.net with SSO token</li>
+                <li>Frontend checks <code>/api/user/profile</code> (auto-syncs user if missing)</li>
+                <li>If ExternalSubjectId not in Users table → create record (upsert)</li>
+                <li>SSO claims (name, email, roles) populate/update local User</li>
+            </ul>
+
+            <h3>5.3 Admin Changes Audit</h3>
+            <ul>
+                <li>Admin updates Users.Email via grid</li>
+                <li>API logs: <code>INSERT AuditLog (userId, operation='UPDATE', tableName='Users', oldValues='{Email: old@xxx}', newValues='{Email: new@xxx}')</code></li>
+                <li>Admin opens audit log, sees full history</li>
+            </ul>
+        </div>
+
+        <div class="section" id="section6">
+            <h2>6. Error Handling & Validation</h2>
+
+            <h3>6.1 Client-Side (Blazor)</h3>
+            <ul>
+                <li>Form validation (required fields, email format, max length)</li>
+                <li>Show toast notifications (success, error, warning)</li>
+                <li>Disable buttons during API calls (prevent double-submit)</li>
+            </ul>
+
+            <h3>6.2 Server-Side (API)</h3>
+            <ul>
+                <li>Validate DTOs (FluentValidation or DataAnnotations)</li>
+                <li>Check authorization (claims-based, admin-only endpoints)</li>
+                <li>Handle concurrency (optimistic locking if needed)</li>
+                <li>Return meaningful error codes (400 Bad Request, 403 Forbidden, 409 Conflict, 500 Internal Error)</li>
+                <li>Log errors to app insights + audit trail</li>
+            </ul>
+
+            <h3>6.3 Response Format</h3>
+            <p>On success:</p>
+            <pre class="json-example">{
+  "success": true,
+  "data": { ... },
+  "errors": null,
+  "correlationId": "uuid"
+}</pre>
+            <p>On error:</p>
+            <pre class="json-example">{
+  "success": false,
+  "data": null,
+  "errors": {
+    "fieldName": ["Field is required"]
+  },
+  "correlationId": "uuid"
+}</pre>
+        </div>
+
+        <div class="section" id="section7">
+            <h2>7. Performance Expectations</h2>
+
+            <h3>7.1 Frontend</h3>
+            <ul>
+                <li>Event list load: &lt; 2 sec (cached if possible)</li>
+                <li>Canvas render: real-time &lt; 100ms per layer update</li>
+                <li>PNG export: &lt; 5 sec for 1080×1080 image</li>
+            </ul>
+
+            <h3>7.2 Admin</h3>
+            <ul>
+                <li>Table load (1k rows): &lt; 3 sec</li>
+                <li>Search/filter: &lt; 1 sec</li>
+                <li>CSV export (10k rows): &lt; 10 sec</li>
+            </ul>
+
+            <h3>7.3 Database</h3>
+            <ul>
+                <li>All queries indexed on FK/search columns</li>
+                <li>Paging enforced (no unbounded queries)</li>
+                <li>Connection pooling configured</li>
+            </ul>
+        </div>
+
+        <div class="section" id="section8">
+            <h2>8. Security Considerations</h2>
+
+            <h3>8.1 Authentication</h3>
+            <ul>
+                <li>OIDC/OAuth2 via upstream provider</li>
+                <li>JWT tokens for API calls (Bearer scheme)</li>
+                <li>Token expiry + refresh handled by OIDC middleware</li>
+            </ul>
+
+            <h3>8.2 Authorization</h3>
+            <ul>
+                <li>Frontend: volunteer/organizer roles (read events, own profile edit)</li>
+                <li>Admin: admin role only (full CRUD on whitelisted tables)</li>
+                <li>Row-level security: users can't edit other users' profiles (v1 MVP, fine-grained v2+)</li>
+            </ul>
+
+            <h3>8.3 Data Protection</h3>
+            <ul>
+                <li>SQL parameterized queries (entity framework handles)</li>
+                <li>Admin API whitelist prevents access to non-whitelisted tables</li>
+                <li>Audit logging on all mutations</li>
+                <li>PII: profile images stored server-side, no exposed file paths</li>
+            </ul>
+
+            <h3>8.4 API Rate Limiting (v2+)</h3>
+            <ul>
+                <li>Per-user rate limits (e.g., 100 req/min for standard, 1000 for admin)</li>
+                <li>Distributed rate limiter (Redis or similar)</li>
+            </ul>
+        </div>
+
+        <div class="section" id="section9">
+            <h2>9. Deployment & Configuration</h2>
+
+            <h3>9.1 Environment-Specific Config (appsettings)</h3>
+            <ul>
+                <li>OIDC provider URL + client ID</li>
+                <li>Database connection strings</li>
+                <li>API base URLs (for service-to-controller calls)</li>
+                <li>Logging level (Info/Debug)</li>
+                <li>Feature flags (Telerik MCP usage, AI provider, etc.)</li>
+            </ul>
+
+            <h3>9.2 Release Plan</h3>
+
+            <h4>v1 (Beta, this sprint)</h4>
+            <ul>
+                <li>Frontend: event list + register flow</li>
+                <li>TrekkerGenerator: canvas editor + PNG export + template save/load</li>
+                <li>Admin: CRUD grids for core tables</li>
+                <li>SSO integration complete</li>
+                <li>No AI, no messaging, no gamification</li>
+            </ul>
+
+            <h4>v2 (Post-Beta)</h4>
+            <ul>
+                <li>Social: feed, messaging, followers</li>
+                <li>TrekkerGenerator: AI image gen, animations, collaboration</li>
+                <li>Advanced admin: audit log UI, user bans, event approval workflows</li>
+                <li>Analytics & reporting</li>
+            </ul>
+
+            <h4>v3+ (Roadmap)</h4>
+            <ul>
+                <li>Mobile apps</li>
+                <li>Integrations (Stripe, email marketing)</li>
+                <li>Marketplace</li>
+                <li>Advanced gamification</li>
+            </ul>
+        </div>
+
+        <div class="appendix" id="appendix">
+            <h2>Appendix: Key Terminology</h2>
+            <ul>
+                <li><strong>Tracker</strong>: Volunteer record (links to User)</li>
+                <li><strong>Event</strong>: activity organized by an Organizer</li>
+                <li><strong>EventTask</strong>: sub-component of an Event (e.g., "Setup", "Check-in", "Cleanup")</li>
+                <li><strong>EventParticipant</strong>: volunteer registration for an event</li>
+                <li><strong>Canvas</strong>: the editable design surface in TrekkerGenerator</li>
+                <li><strong>Layer</strong>: text or image element on canvas (z-ordered, styleable)</li>
+                <li><strong>Template</strong>: saved canvas state (layout + styling) for reuse</li>
+                <li><strong>Render Job</strong>: export request for a canvas to PNG</li>
+                <li><strong>Audit Log</strong>: immutable record of admin mutations</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 0.9em;">
+            <p>SocialMotive Platform - Functional Design Document</p>
+            <p>Generated for project planning and stakeholder reference</p>
+        </div>
+    </div>
+</body>
+</html>
