@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="10.0.0" />
     
     <!-- Telerik UI (requires NuGet.Config with Telerik feed) -->
-    <!-- PackageReference Include="Telerik.UI.for.Blazor" Version="2024.4.1208" / -->
+    <PackageReference Include="Telerik.UI.for.Blazor" Version="2024.4.1208" />
     
     <!-- Logging -->
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
