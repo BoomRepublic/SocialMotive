@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
 		<PackageReference Include="Telerik.Documents.CMapUtils" Version="2026.1.304" />
 		<PackageReference Include="Telerik.Documents.Core" Version="2026.1.304" />
 		<PackageReference Include="Telerik.Documents.Fixed" Version="2026.1.304" />

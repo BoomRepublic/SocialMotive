@@ -31,17 +31,14 @@ namespace SocialMotive.WebApp.Controllers
         #region Users
 
         /// <summary>
-        /// Get paginated list of users
+        /// Get list of users
         /// </summary>
         [HttpGet("users")]
-        public async Task<ActionResult<PaginatedResponse<UserDto>>> GetUsers(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<List<UserDto>>> GetUsers()
         {
             try
             {
-                var totalCount = await _dbContext.Users.CountAsync();
                 var users = await _dbContext.Users
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
                     .Select(u => new UserDto
                     {
                         Id = u.Id,
@@ -53,12 +50,12 @@ namespace SocialMotive.WebApp.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(PaginatedResponse<UserDto>.SuccessResponse(users, pageNumber, pageSize, totalCount));
+                return Ok(users);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting users");
-                return BadRequest(Response<UserDto>.FailureResponse("Error retrieving users", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving users", error = ex.Message });
             }
         }
 
@@ -66,13 +63,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Get single user by ID
         /// </summary>
         [HttpGet("users/{id:guid}")]
-        public async Task<ActionResult<Response<UserDto>>> GetUser(Guid id)
+        public async Task<ActionResult<UserDto>> GetUser(Guid id)
         {
             try
             {
                 var user = await _dbContext.Users.FindAsync(id);
                 if (user == null)
-                    return NotFound(Response<UserDto>.FailureResponse("User not found"));
+                    return NotFound();
 
                 var userDto = new UserDto
                 {
@@ -84,12 +81,12 @@ namespace SocialMotive.WebApp.Controllers
                     Bio = user.Bio
                 };
 
-                return Ok(Response<UserDto>.SuccessResponse(userDto));
+                return Ok(userDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting user {UserId}", id);
-                return BadRequest(Response<UserDto>.FailureResponse("Error retrieving user", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving user", error = ex.Message });
             }
         }
 
@@ -97,7 +94,7 @@ namespace SocialMotive.WebApp.Controllers
         /// Create new user
         /// </summary>
         [HttpPost("users")]
-        public async Task<ActionResult<Response<UserDto>>> CreateUser([FromBody] UserDto userDto)
+        public async Task<ActionResult<UserDto>> CreateUser([FromBody] UserDto userDto)
         {
             try
             {
@@ -127,12 +124,12 @@ namespace SocialMotive.WebApp.Controllers
                     Bio = user.Bio
                 };
 
-                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, Response<UserDto>.SuccessResponse(resultDto, "User created successfully"));
+                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating user");
-                return BadRequest(Response<UserDto>.FailureResponse("Error creating user", new[] { ex.Message }));
+                return BadRequest(new { message = "Error creating user", error = ex.Message });
             }
         }
 
@@ -140,13 +137,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Update user
         /// </summary>
         [HttpPut("users/{id:guid}")]
-        public async Task<ActionResult<Response<UserDto>>> UpdateUser(Guid id, [FromBody] UserDto userDto)
+        public async Task<ActionResult<UserDto>> UpdateUser(Guid id, [FromBody] UserDto userDto)
         {
             try
             {
                 var user = await _dbContext.Users.FindAsync(id);
                 if (user == null)
-                    return NotFound(Response<UserDto>.FailureResponse("User not found"));
+                    return NotFound();
 
                 user.FirstName = userDto.FirstName;
                 user.LastName = userDto.LastName;
@@ -168,12 +165,12 @@ namespace SocialMotive.WebApp.Controllers
                     Bio = user.Bio
                 };
 
-                return Ok(Response<UserDto>.SuccessResponse(resultDto, "User updated successfully"));
+                return Ok(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating user {UserId}", id);
-                return BadRequest(Response<UserDto>.FailureResponse("Error updating user", new[] { ex.Message }));
+                return BadRequest(new { message = "Error updating user", error = ex.Message });
             }
         }
 
@@ -181,23 +178,23 @@ namespace SocialMotive.WebApp.Controllers
         /// Delete user
         /// </summary>
         [HttpDelete("users/{id:guid}")]
-        public async Task<ActionResult<Models.Response>> DeleteUser(Guid id)
+        public async Task<IActionResult> DeleteUser(Guid id)
         {
             try
             {
                 var user = await _dbContext.Users.FindAsync(id);
                 if (user == null)
-                    return NotFound(Models.Response.FailureResponse("User not found"));
+                    return NotFound();
 
                 _dbContext.Users.Remove(user);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(Models.Response.SuccessResponse(null, "User deleted successfully"));
+                return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting user {UserId}", id);
-                return BadRequest(Models.Response.FailureResponse("Error deleting user", new[] { ex.Message }));
+                return BadRequest(new { message = "Error deleting user", error = ex.Message });
             }
         }
 
@@ -206,17 +203,14 @@ namespace SocialMotive.WebApp.Controllers
         #region Trackers
 
         /// <summary>
-        /// Get paginated list of trackers
+        /// Get list of trackers
         /// </summary>
         [HttpGet("trackers")]
-        public async Task<ActionResult<PaginatedResponse<TrackerDto>>> GetTrackers(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<List<TrackerDto>>> GetTrackers()
         {
             try
             {
-                var totalCount = await _dbContext.Trackers.CountAsync();
                 var trackers = await _dbContext.Trackers
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
                     .Select(t => new TrackerDto
                     {
                         TrackerId = t.TrackerId,
@@ -238,12 +232,12 @@ namespace SocialMotive.WebApp.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(PaginatedResponse<TrackerDto>.SuccessResponse(trackers, pageNumber, pageSize, totalCount));
+                return Ok(trackers);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting trackers");
-                return BadRequest(Response<TrackerDto>.FailureResponse("Error retrieving trackers", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving trackers", error = ex.Message });
             }
         }
 
@@ -251,13 +245,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Get single tracker by ID
         /// </summary>
         [HttpGet("trackers/{id:int}")]
-        public async Task<ActionResult<Response<TrackerDto>>> GetTracker(int id)
+        public async Task<ActionResult<TrackerDto>> GetTracker(int id)
         {
             try
             {
                 var tracker = await _dbContext.Trackers.FindAsync(id);
                 if (tracker == null)
-                    return NotFound(Response<TrackerDto>.FailureResponse("Tracker not found"));
+                    return NotFound();
 
                 var trackerDto = new TrackerDto
                 {
@@ -279,12 +273,12 @@ namespace SocialMotive.WebApp.Controllers
                     JoinedAt = tracker.JoinedAt
                 };
 
-                return Ok(Response<TrackerDto>.SuccessResponse(trackerDto));
+                return Ok(trackerDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting tracker {TrackerId}", id);
-                return BadRequest(Response<TrackerDto>.FailureResponse("Error retrieving tracker", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving tracker", error = ex.Message });
             }
         }
 
@@ -292,7 +286,7 @@ namespace SocialMotive.WebApp.Controllers
         /// Create new tracker
         /// </summary>
         [HttpPost("trackers")]
-        public async Task<ActionResult<Response<TrackerDto>>> CreateTracker([FromBody] TrackerDto trackerDto)
+        public async Task<ActionResult<TrackerDto>> CreateTracker([FromBody] TrackerDto trackerDto)
         {
             try
             {
@@ -340,12 +334,12 @@ namespace SocialMotive.WebApp.Controllers
                     JoinedAt = tracker.JoinedAt
                 };
 
-                return CreatedAtAction(nameof(GetTracker), new { id = tracker.TrackerId }, Response<TrackerDto>.SuccessResponse(resultDto, "Tracker created successfully"));
+                return CreatedAtAction(nameof(GetTracker), new { id = tracker.TrackerId }, resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating tracker");
-                return BadRequest(Response<TrackerDto>.FailureResponse("Error creating tracker", new[] { ex.Message }));
+                return BadRequest(new { message = "Error creating tracker", error = ex.Message });
             }
         }
 
@@ -353,13 +347,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Update tracker
         /// </summary>
         [HttpPut("trackers/{id:int}")]
-        public async Task<ActionResult<TrackerUpdateResponse>> UpdateTracker(int id, [FromBody] TrackerUpdateDto trackerDto)
+        public async Task<ActionResult<TrackerDto>> UpdateTracker(int id, [FromBody] TrackerUpdateDto trackerDto)
         {
             try
             {
                 var tracker = await _dbContext.Trackers.FindAsync(id);
                 if (tracker == null)
-                    return NotFound(TrackerUpdateResponse.FailureResponse("Tracker not found"));
+                    return NotFound();
 
                 tracker.DisplayName = trackerDto.DisplayName;
                 tracker.Phone = trackerDto.Phone;
@@ -398,12 +392,12 @@ namespace SocialMotive.WebApp.Controllers
                     JoinedAt = tracker.JoinedAt
                 };
 
-                return Ok(TrackerUpdateResponse.SuccessResponse(resultDto, "Tracker updated successfully"));
+                return Ok(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating tracker {TrackerId}", id);
-                return BadRequest(TrackerUpdateResponse.FailureResponse("Error updating tracker", new[] { ex.Message }));
+                return BadRequest(new { message = "Error updating tracker", error = ex.Message });
             }
         }
 
@@ -411,23 +405,23 @@ namespace SocialMotive.WebApp.Controllers
         /// Delete tracker
         /// </summary>
         [HttpDelete("trackers/{id:int}")]
-        public async Task<ActionResult<Models.Response>> DeleteTracker(int id)
+        public async Task<IActionResult> DeleteTracker(int id)
         {
             try
             {
                 var tracker = await _dbContext.Trackers.FindAsync(id);
                 if (tracker == null)
-                    return NotFound(Models.Response.FailureResponse("Tracker not found"));
+                    return NotFound();
 
                 _dbContext.Trackers.Remove(tracker);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(Models.Response.SuccessResponse(null, "Tracker deleted successfully"));
+                return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting tracker {TrackerId}", id);
-                return BadRequest(Models.Response.FailureResponse("Error deleting tracker", new[] { ex.Message }));
+                return BadRequest(new { message = "Error deleting tracker", error = ex.Message });
             }
         }
 
@@ -436,17 +430,14 @@ namespace SocialMotive.WebApp.Controllers
         #region Events
 
         /// <summary>
-        /// Get paginated list of events
+        /// Get list of events
         /// </summary>
         [HttpGet("events")]
-        public async Task<ActionResult<PaginatedResponse<EventDto>>> GetEvents(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<List<EventDto>>> GetEvents()
         {
             try
             {
-                var totalCount = await _dbContext.Events.CountAsync();
                 var events = await _dbContext.Events
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
                     .Select(e => new EventDto
                     {
                         Id = e.Id,
@@ -474,12 +465,12 @@ namespace SocialMotive.WebApp.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(PaginatedResponse<EventDto>.SuccessResponse(events, pageNumber, pageSize, totalCount));
+                return Ok(events);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting events");
-                return BadRequest(Response<EventDto>.FailureResponse("Error retrieving events", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving events", error = ex.Message });
             }
         }
 
@@ -487,13 +478,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Get single event by ID
         /// </summary>
         [HttpGet("events/{id:int}")]
-        public async Task<ActionResult<Response<EventDto>>> GetEvent(int id)
+        public async Task<ActionResult<EventDto>> GetEvent(int id)
         {
             try
             {
                 var @event = await _dbContext.Events.FindAsync(id);
                 if (@event == null)
-                    return NotFound(Response<EventDto>.FailureResponse("Event not found"));
+                    return NotFound();
 
                 var eventDto = new EventDto
                 {
@@ -521,12 +512,12 @@ namespace SocialMotive.WebApp.Controllers
                     PublishedAt = @event.PublishedAt
                 };
 
-                return Ok(Response<EventDto>.SuccessResponse(eventDto));
+                return Ok(eventDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting event {EventId}", id);
-                return BadRequest(Response<EventDto>.FailureResponse("Error retrieving event", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving event", error = ex.Message });
             }
         }
 
@@ -534,7 +525,7 @@ namespace SocialMotive.WebApp.Controllers
         /// Create new event
         /// </summary>
         [HttpPost("events")]
-        public async Task<ActionResult<Response<EventDto>>> CreateEvent([FromBody] EventDto eventDto)
+        public async Task<ActionResult<EventDto>> CreateEvent([FromBody] EventDto eventDto)
         {
             try
             {
@@ -591,12 +582,12 @@ namespace SocialMotive.WebApp.Controllers
                     PublishedAt = @event.PublishedAt
                 };
 
-                return CreatedAtAction(nameof(GetEvent), new { id = @event.Id }, Response<EventDto>.SuccessResponse(resultDto, "Event created successfully"));
+                return CreatedAtAction(nameof(GetEvent), new { id = @event.Id }, resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating event");
-                return BadRequest(Response<EventDto>.FailureResponse("Error creating event", new[] { ex.Message }));
+                return BadRequest(new { message = "Error creating event", error = ex.Message });
             }
         }
 
@@ -604,13 +595,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Update event
         /// </summary>
         [HttpPut("events/{id:int}")]
-        public async Task<ActionResult<Response<EventDto>>> UpdateEvent(int id, [FromBody] EventDto eventDto)
+        public async Task<ActionResult<EventDto>> UpdateEvent(int id, [FromBody] EventDto eventDto)
         {
             try
             {
                 var @event = await _dbContext.Events.FindAsync(id);
                 if (@event == null)
-                    return NotFound(Response<EventDto>.FailureResponse("Event not found"));
+                    return NotFound();
 
                 @event.Title = eventDto.Title;
                 @event.Description = eventDto.Description;
@@ -660,12 +651,12 @@ namespace SocialMotive.WebApp.Controllers
                     PublishedAt = @event.PublishedAt
                 };
 
-                return Ok(Response<EventDto>.SuccessResponse(resultDto, "Event updated successfully"));
+                return Ok(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating event {EventId}", id);
-                return BadRequest(Response<EventDto>.FailureResponse("Error updating event", new[] { ex.Message }));
+                return BadRequest(new { message = "Error updating event", error = ex.Message });
             }
         }
 
@@ -673,23 +664,23 @@ namespace SocialMotive.WebApp.Controllers
         /// Delete event
         /// </summary>
         [HttpDelete("events/{id:int}")]
-        public async Task<ActionResult<Models.Response>> DeleteEvent(int id)
+        public async Task<IActionResult> DeleteEvent(int id)
         {
             try
             {
                 var @event = await _dbContext.Events.FindAsync(id);
                 if (@event == null)
-                    return NotFound(Models.Response.FailureResponse("Event not found"));
+                    return NotFound();
 
                 _dbContext.Events.Remove(@event);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(Models.Response.SuccessResponse(null, "Event deleted successfully"));
+                return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting event {EventId}", id);
-                return BadRequest(Models.Response.FailureResponse("Error deleting event", new[] { ex.Message }));
+                return BadRequest(new { message = "Error deleting event", error = ex.Message });
             }
         }
 
@@ -698,17 +689,14 @@ namespace SocialMotive.WebApp.Controllers
         #region Labels
 
         /// <summary>
-        /// Get paginated list of labels
+        /// Get list of labels
         /// </summary>
         [HttpGet("labels")]
-        public async Task<ActionResult<PaginatedResponse<LabelDto>>> GetLabels(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<List<LabelDto>>> GetLabels()
         {
             try
             {
-                var totalCount = await _dbContext.Labels.CountAsync();
                 var labels = await _dbContext.Labels
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
                     .Select(l => new LabelDto
                     {
                         LabelId = l.LabelId,
@@ -721,12 +709,12 @@ namespace SocialMotive.WebApp.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(PaginatedResponse<LabelDto>.SuccessResponse(labels, pageNumber, pageSize, totalCount));
+                return Ok(labels);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting labels");
-                return BadRequest(Response<LabelDto>.FailureResponse("Error retrieving labels", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving labels", error = ex.Message });
             }
         }
 
@@ -734,13 +722,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Get single label by ID
         /// </summary>
         [HttpGet("labels/{id:int}")]
-        public async Task<ActionResult<Response<LabelDto>>> GetLabel(int id)
+        public async Task<ActionResult<LabelDto>> GetLabel(int id)
         {
             try
             {
                 var label = await _dbContext.Labels.FindAsync(id);
                 if (label == null)
-                    return NotFound(Response<LabelDto>.FailureResponse("Label not found"));
+                    return NotFound();
 
                 var labelDto = new LabelDto
                 {
@@ -753,12 +741,12 @@ namespace SocialMotive.WebApp.Controllers
                     Level = label.Level
                 };
 
-                return Ok(Response<LabelDto>.SuccessResponse(labelDto));
+                return Ok(labelDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting label {LabelId}", id);
-                return BadRequest(Response<LabelDto>.FailureResponse("Error retrieving label", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving label", error = ex.Message });
             }
         }
 
@@ -766,7 +754,7 @@ namespace SocialMotive.WebApp.Controllers
         /// Create new label
         /// </summary>
         [HttpPost("labels")]
-        public async Task<ActionResult<Response<LabelDto>>> CreateLabel([FromBody] LabelDto labelDto)
+        public async Task<ActionResult<LabelDto>> CreateLabel([FromBody] LabelDto labelDto)
         {
             try
             {
@@ -794,12 +782,12 @@ namespace SocialMotive.WebApp.Controllers
                     Level = label.Level
                 };
 
-                return CreatedAtAction(nameof(GetLabel), new { id = label.LabelId }, Response<LabelDto>.SuccessResponse(resultDto, "Label created successfully"));
+                return CreatedAtAction(nameof(GetLabel), new { id = label.LabelId }, resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating label");
-                return BadRequest(Response<LabelDto>.FailureResponse("Error creating label", new[] { ex.Message }));
+                return BadRequest(new { message = "Error creating label", error = ex.Message });
             }
         }
 
@@ -807,13 +795,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Update label
         /// </summary>
         [HttpPut("labels/{id:int}")]
-        public async Task<ActionResult<Response<LabelDto>>> UpdateLabel(int id, [FromBody] LabelDto labelDto)
+        public async Task<ActionResult<LabelDto>> UpdateLabel(int id, [FromBody] LabelDto labelDto)
         {
             try
             {
                 var label = await _dbContext.Labels.FindAsync(id);
                 if (label == null)
-                    return NotFound(Response<LabelDto>.FailureResponse("Label not found"));
+                    return NotFound();
 
                 label.Name = labelDto.Name;
                 label.ColorHex = labelDto.ColorHex;
@@ -836,12 +824,12 @@ namespace SocialMotive.WebApp.Controllers
                     Level = label.Level
                 };
 
-                return Ok(Response<LabelDto>.SuccessResponse(resultDto, "Label updated successfully"));
+                return Ok(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating label {LabelId}", id);
-                return BadRequest(Response<LabelDto>.FailureResponse("Error updating label", new[] { ex.Message }));
+                return BadRequest(new { message = "Error updating label", error = ex.Message });
             }
         }
 
@@ -849,23 +837,23 @@ namespace SocialMotive.WebApp.Controllers
         /// Delete label
         /// </summary>
         [HttpDelete("labels/{id:int}")]
-        public async Task<ActionResult<Models.Response>> DeleteLabel(int id)
+        public async Task<IActionResult> DeleteLabel(int id)
         {
             try
             {
                 var label = await _dbContext.Labels.FindAsync(id);
                 if (label == null)
-                    return NotFound(Models.Response.FailureResponse("Label not found"));
+                    return NotFound();
 
                 _dbContext.Labels.Remove(label);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(Models.Response.SuccessResponse(null, "Label deleted successfully"));
+                return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting label {LabelId}", id);
-                return BadRequest(Models.Response.FailureResponse("Error deleting label", new[] { ex.Message }));
+                return BadRequest(new { message = "Error deleting label", error = ex.Message });
             }
         }
 
@@ -874,17 +862,14 @@ namespace SocialMotive.WebApp.Controllers
         #region EventTypes
 
         /// <summary>
-        /// Get paginated list of event types
+        /// Get list of event types
         /// </summary>
         [HttpGet("eventtypes")]
-        public async Task<ActionResult<PaginatedResponse<EventTypeDto>>> GetEventTypes(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<List<EventTypeDto>>> GetEventTypes()
         {
             try
             {
-                var totalCount = await _dbContext.EventTypes.CountAsync();
                 var eventTypes = await _dbContext.EventTypes
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
                     .Select(et => new EventTypeDto
                     {
                         Id = et.Id,
@@ -896,12 +881,12 @@ namespace SocialMotive.WebApp.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(PaginatedResponse<EventTypeDto>.SuccessResponse(eventTypes, pageNumber, pageSize, totalCount));
+                return Ok(eventTypes);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting event types");
-                return BadRequest(Response<EventTypeDto>.FailureResponse("Error retrieving event types", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving event types", error = ex.Message });
             }
         }
 
@@ -909,13 +894,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Get single event type by ID
         /// </summary>
         [HttpGet("eventtypes/{id:int}")]
-        public async Task<ActionResult<Response<EventTypeDto>>> GetEventType(int id)
+        public async Task<ActionResult<EventTypeDto>> GetEventType(int id)
         {
             try
             {
                 var eventType = await _dbContext.EventTypes.FindAsync(id);
                 if (eventType == null)
-                    return NotFound(Response<EventTypeDto>.FailureResponse("Event type not found"));
+                    return NotFound();
 
                 var eventTypeDto = new EventTypeDto
                 {
@@ -927,12 +912,12 @@ namespace SocialMotive.WebApp.Controllers
                     Created = eventType.Created
                 };
 
-                return Ok(Response<EventTypeDto>.SuccessResponse(eventTypeDto));
+                return Ok(eventTypeDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting event type {EventTypeId}", id);
-                return BadRequest(Response<EventTypeDto>.FailureResponse("Error retrieving event type", new[] { ex.Message }));
+                return BadRequest(new { message = "Error retrieving event type", error = ex.Message });
             }
         }
 
@@ -940,7 +925,7 @@ namespace SocialMotive.WebApp.Controllers
         /// Create new event type
         /// </summary>
         [HttpPost("eventtypes")]
-        public async Task<ActionResult<Response<EventTypeDto>>> CreateEventType([FromBody] EventTypeDto eventTypeDto)
+        public async Task<ActionResult<EventTypeDto>> CreateEventType([FromBody] EventTypeDto eventTypeDto)
         {
             try
             {
@@ -966,12 +951,12 @@ namespace SocialMotive.WebApp.Controllers
                     Created = eventType.Created
                 };
 
-                return CreatedAtAction(nameof(GetEventType), new { id = eventType.Id }, Response<EventTypeDto>.SuccessResponse(resultDto, "Event type created successfully"));
+                return CreatedAtAction(nameof(GetEventType), new { id = eventType.Id }, resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating event type");
-                return BadRequest(Response<EventTypeDto>.FailureResponse("Error creating event type", new[] { ex.Message }));
+                return BadRequest(new { message = "Error creating event type", error = ex.Message });
             }
         }
 
@@ -979,13 +964,13 @@ namespace SocialMotive.WebApp.Controllers
         /// Update event type
         /// </summary>
         [HttpPut("eventtypes/{id:int}")]
-        public async Task<ActionResult<Response<EventTypeDto>>> UpdateEventType(int id, [FromBody] EventTypeDto eventTypeDto)
+        public async Task<ActionResult<EventTypeDto>> UpdateEventType(int id, [FromBody] EventTypeDto eventTypeDto)
         {
             try
             {
                 var eventType = await _dbContext.EventTypes.FindAsync(id);
                 if (eventType == null)
-                    return NotFound(Response<EventTypeDto>.FailureResponse("Event type not found"));
+                    return NotFound();
 
                 eventType.Name = eventTypeDto.Name;
                 eventType.Description = eventTypeDto.Description;
@@ -1005,12 +990,12 @@ namespace SocialMotive.WebApp.Controllers
                     Created = eventType.Created
                 };
 
-                return Ok(Response<EventTypeDto>.SuccessResponse(resultDto, "Event type updated successfully"));
+                return Ok(resultDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating event type {EventTypeId}", id);
-                return BadRequest(Response<EventTypeDto>.FailureResponse("Error updating event type", new[] { ex.Message }));
+                return BadRequest(new { message = "Error updating event type", error = ex.Message });
             }
         }
 
@@ -1018,23 +1003,23 @@ namespace SocialMotive.WebApp.Controllers
         /// Delete event type
         /// </summary>
         [HttpDelete("eventtypes/{id:int}")]
-        public async Task<ActionResult<Models.Response>> DeleteEventType(int id)
+        public async Task<IActionResult> DeleteEventType(int id)
         {
             try
             {
                 var eventType = await _dbContext.EventTypes.FindAsync(id);
                 if (eventType == null)
-                    return NotFound(Models.Response.FailureResponse("Event type not found"));
+                    return NotFound();
 
                 _dbContext.EventTypes.Remove(eventType);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(Models.Response.SuccessResponse(null, "Event type deleted successfully"));
+                return Ok();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting event type {EventTypeId}", id);
-                return BadRequest(Models.Response.FailureResponse("Error deleting event type", new[] { ex.Message }));
+                return BadRequest(new { message = "Error deleting event type", error = ex.Message });
             }
         }
 

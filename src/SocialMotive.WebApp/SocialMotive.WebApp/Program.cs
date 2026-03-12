@@ -30,6 +30,30 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddControllers();
 
+// Add Swagger/OpenAPI documentation
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new()
+    {
+        Title = "SocialMotive Admin API",
+        Version = "v1",
+        Description = "REST API for managing SocialMotive database tables (Users, Trackers, Events, Labels, EventTypes)",
+        Contact = new()
+        {
+            Name = "SocialMotive Admin",
+            Email = "admin@socialmotive.local"
+        }
+    });
+
+    // Include XML comments if available
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath);
+    }
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -39,6 +63,14 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// Enable Swagger in development and always for API documentation
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "SocialMotive Admin API v1");
+    options.RoutePrefix = "swagger";
+});
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
