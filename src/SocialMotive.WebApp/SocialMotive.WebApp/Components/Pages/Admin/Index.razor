@@ -1,0 +1,70 @@
+@page "/admin"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "AdminFull")]
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Admin Dashboard</h1>
+        <p class="text-muted">Manage all SocialMotive and TrekkerGenerator data</p>
+    </div>
+
+    <div class="admin-tables grid">
+        <h2>SocialMotive Database Tables</h2>
+        <div class="table-links">
+            <a href="/admin/users" class="btn btn-outline-primary">Users</a>
+            <a href="/admin/trackers" class="btn btn-outline-primary">Trackers</a>
+            <a href="/admin/events" class="btn btn-outline-primary">Events</a>
+            <a href="/admin/event-types" class="btn btn-outline-primary">Event Types</a>
+            <a href="/admin/event-tasks" class="btn btn-outline-primary">Event Tasks</a>
+            <a href="/admin/event-participants" class="btn btn-outline-primary">Event Participants</a>
+            <a href="/admin/event-task-assignments" class="btn btn-outline-primary">Event Task Assignments</a>
+            <a href="/admin/groups" class="btn btn-outline-primary">Groups</a>
+            <a href="/admin/labels" class="btn btn-outline-primary">Labels</a>
+            <a href="/admin/tracker-labels" class="btn btn-outline-primary">Tracker Labels</a>
+            <a href="/admin/tracker-roles" class="btn btn-outline-primary">Tracker Roles</a>
+            <a href="/admin/cities" class="btn btn-outline-primary">Cities</a>
+            <a href="/admin/locations" class="btn btn-outline-primary">Locations</a>
+            <a href="/admin/invites" class="btn btn-outline-primary">Invites</a>
+            <a href="/admin/settings" class="btn btn-outline-primary">Settings</a>
+            <a href="/admin/user-accounts" class="btn btn-outline-primary">User Accounts</a>
+        </div>
+    </div>
+
+    <div class="generator-tables grid">
+        <h2>TrekkerGenerator Database Tables</h2>
+        <div class="table-links">
+            <a href="/admin/templates" class="btn btn-outline-success">Templates</a>
+            <a href="/admin/assets" class="btn btn-outline-success">Assets</a>
+            <a href="/admin/layers" class="btn btn-outline-success">Layers</a>
+            <a href="/admin/render-jobs" class="btn btn-outline-success">Render Jobs</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-container {
+        padding: 2rem;
+    }
+
+    .page-header {
+        margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-tables,
+    .generator-tables {
+        margin-bottom: 2rem;
+    }
+
+    .table-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+</style>

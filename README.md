@@ -23,7 +23,7 @@
 - **UI Framework**: Blazor Web App (Auto/Interactive rendering)
 - **UI Components**: Telerik UI for Blazor
 - **Database**: Microsoft SQL Server (two databases: `socialmotive`, `trekkergenerator`)
-- **Authentication**: OIDC/OAuth2 SSO
+- **Authorization**: Claims-based role access control
 - **ORM**: Entity Framework Core
 - **Testing**: xUnit, Moq
 - **API Documentation**: Swagger/OpenAPI
@@ -42,43 +42,49 @@ SocialMotive/
 ├── SQL/                               # Database scripts
 │   └── socialmotive-create-v1.sql     # Schema & initial data
 │
-└── src/ (to be created)               # Application source code
-    ├── SocialMotive.Core/             # Shared library (DTOs, contracts, auth)
+└── src/
+    ├── SocialMotive.Core/               # Shared library
+    │   ├── Api/
+    │   ├── Web/                         # Frontend (volunteer portal) contracts
+    │   ├── Generator/                   # Generator domain + services
+    │   └── Admin/                       # Admin contracts
     │
-    ├── SocialMotive.Frontend.Web/     # Volunteer portal
-    │   ├── Controllers/
-    │   ├── Services/
-    │   └── Components/
-    │
-    ├── SocialMotive.TrekkerGenerator.Web/  # Canvas editor & promo tool
-    │   ├── Controllers/
-    │   ├── Services/
-    │   └── Components/
-    │
-    ├── SocialMotive.TrekkerGenerator.Core/ # Business logic
-    │   ├── Domain/
-    │   ├── Services/
-    │   └── Infrastructure/
-    │
-    ├── SocialMotive.AdminBackend.Web/ # Admin data management
-    │   ├── Controllers/
-    │   ├── Services/
-    │   └── Components/
-    │
-    └── SocialMotive.TrekkerGenerator.Web.Tests/
+    └── SocialMotive.Web/                # Unified app: volunteer portal + generator + admin
+        ├── Program.cs
+        ├── Controllers/
+        │   ├── Web/
+        │   ├── Generator/
+        │   └── Admin/
+        ├── Services/
+        │   └── Api/
+        │       ├── Web/
+        │       ├── Generator/
+        │       └── Admin/
+        └── Components/
+            ├── Pages/
+            │   ├── Index.razor, Dashboard.razor, EventDetail.razor, MyEvents.razor, Profile.razor (Frontend pages)
+            │   ├── Generator/
+            │   └── Admin/
+            └── Shared/
+                ├── Frontend/
+                ├── Generator/
+                └── Admin/
+
+
+**tests/**
+└── SocialMotive.Web.Tests/
 ```
 
 ## Key Features (MVP - v1.0)
 
-### Frontend.Web (Volunteer Portal)
-- 🔐 OIDC/OAuth2 authentication
-- 🔍 Event discovery with filtering & search
+### Web (Volunteer Portal)
+-  Event discovery with filtering & search
 - 📋 Event registration & management
 - ⏱️ Volunteer hours tracking
 - 👤 User profile management
 - 📧 Email notifications (basic)
 
-### TrekkerGenerator.Web (Canvas Editor)
+### Generator (Canvas Editor)
 - 🎨 Interactive WYSIWYG canvas editor
 - 🖼️ Layer management (text & images)
 - 📐 Canvas presets (social media sizes)
@@ -86,11 +92,11 @@ SocialMotive/
 - 📥 Background image upload
 - 📤 PNG export (transparency support)
 
-### AdminBackend.Web (Data Management)
+### Admin (Data Management)
 - 📊 Metadata-driven CRUD grids
 - 🔍 Advanced filtering & sorting
 - 💾 CSV/Excel export
-- 🗂️ Multi-database support (SocialMotive + TrekkerGenerator)
+- 🗂️ Single-database support (SocialMotive)
 - 📋 Table whitelist controls
 - 📝 Audit logging (v2+)
 
@@ -133,7 +139,7 @@ All planning and design documentation is in the `planning/` folder:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    SocialMotive.Core                        │
-│         (Shared DTOs, Contracts, Auth Helpers)             │
+│         (Shared DTOs, Contracts, Helpers)                  │
 └─────────────────────────────────────────────────────────────┘
     ▲              ▲              ▲
     │              │              │
@@ -142,24 +148,7 @@ All planning and design documentation is in the `planning/` folder:
 │   Web    │  │Generator │  │  Backend  │
 │  (Portal)│  │  (Canvas)│  │   (CRUD)  │
 └──────────┘  └──────────┘  └───────────┘
-    │              │              │
-    └──────────────┴──────────────┘
-         OIDC/OAuth2 SSO Provider
 ```
-
-Each app:
-- Runs independently on its own subdomain
-- Has dedicated REST API controllers
-- Uses typed HttpClient API services
-- Accesses separate databases with shared schemas
-
-## Development Status
-
-- ✅ Architecture & planning (complete)
-- ✅ Database schema design (complete)
-- ✅ API specifications (complete)
-- ⏳ Project scaffolding (pending)
-- ⏳ Implementation (pending)
 
 ## Contributing
 

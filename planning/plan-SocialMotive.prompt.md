@@ -3,47 +3,54 @@
 ## Context
 - Date: 2026-03-11
 - Stack: Blazor + Telerik + SQL Server
-- SSO: OIDC/OAuth2 against larger SocialMotive system
-- Scope: separate subsystem apps with own APIs
+- Auth: Claims-based role-based access control
+- Scope: Single unified web app with role-based feature areas
 
 ## App Landscape
-- SocialMotive.Frontend.Web
+- **SocialMotive.Web** (unified app)
   - Production URL: https://socialmotive.net
-  - Own API: yes (same host)
-- SocialMotive.TrekkerGenerator.Web
-  - Production URL: https://trekkergenerator.socialmotive.net
-  - API base: https://trekkergenerator.socialmotive.net/api
-  - Purpose: image/trekker generator
-- SocialMotive.AdminBackend.Web
-  - Production URL: https://admin.socialmotive.net
-  - Own API: yes (same host)
+  - Roles: Volunteer, Organizer, Admin
+  - Features by role:
+    - Volunteer Dashboard (`/volunteer/events`, `/volunteer/my-events`, `/volunteer/profile`) — for volunteers
+    - Organizer Dashboard (`/organizer/events`, `/organizer/my-events`, `/organizer/profile`) — for organizers
+    - TrekkerGenerator Editor (`/generator`) — for volunteers
+    - Admin Dashboard (`/admin`) — for admins only
+  - API: All endpoints on same `/api` base (https://socialmotive.net/api)
+  - All api controllers in same app seperated by roles/areas (no separate apps)
+  - AuthZ: Claims-based routing & component visibility (Volunteer, Organizer, Admin roles)
 
 ## Libraries
-- SocialMotive.Core
-  - Shared cross-app contracts/utilities/auth helpers/observability
-- SocialMotive.TrekkerGenerator.Core
-  - Merged generator domain + application + infrastructure logic
-- SocialMotive.TrekkerGenerator.Web.Tests
+- **SocialMotive.Core**
+  - Shared contracts, services, auth, observability
+  - Feature-specific namespaces: Web, Generator, Admin
+  - Generator domain logic (under SocialMotive.Core.Generator namespace)
+- **SocialMotive.Web.Tests** (unit + integration tests)
 
 ## Dependencies (project direction)
-- SocialMotive.Frontend.Web -> SocialMotive.Core
-- SocialMotive.AdminBackend.Web -> SocialMotive.Core
-- SocialMotive.TrekkerGenerator.Web -> SocialMotive.Core, SocialMotive.TrekkerGenerator.Core
-- No direct app-to-app project references
+- **SocialMotive.Web** → SocialMotive.Core (single unified app, all features)
+- No app-to-app references (single app architecture)
 
 ## API Architecture
-- Each app has its own API controllers.
-- Each app has its own API service layer against its own controllers.
-- Flow (all apps): Blazor component -> API service -> Controller -> Core logic.
+- **Single app** hosts all APIs under `/api` base path
+- Feature-organized controllers: Volunteers, Organizers, Generator, Admin
+- Shared API service layer for all features
+- Flow: Blazor component → API service → Controller → Core logic (feature-agnostic)
 
-### API Service Layer by app
-- SocialMotive.Frontend.Web: UI uses Frontend API services only.
-- SocialMotive.TrekkerGenerator.Web: UI uses TrekkerGenerator API services only.
-- SocialMotive.AdminBackend.Web: UI uses Admin API services only.
+### API Service Layer (by feature area)
+- **Frontend**: `DashboardApiService`, `LookupApiService` → GET /api/dashboard/*, GET /api/lookups
+- **Generator**: `TemplatesApiService`, `AssetsApiService`, `RenderApiService` → POST /api/generator/*
+- **Admin**: `MetadataApiService`, `TableCrudApiService`, `ExportApiService` → GET/POST /api/admin/*
+
+### Controllers Organization
+- All controllers in `SocialMotive.Web/Controllers/`:
+  - `VolunteerController.cs` (Volunteer features)
+  - `OrganizerController.cs` (Organizer features)
+  - `GeneratorController.cs` (Generator features)
+  - `AdminController.cs` (Admin features)
 
 ### Controller and API service classes (Core-first contract model)
-- SocialMotive.Core contains shared contracts and base abstractions.
-- Web projects contain concrete controllers.
+- **SocialMotive.Core** contains shared contracts and base abstractions (in feature namespaces)
+- **SocialMotive.Web** contains concrete controllers & API service implementations
 
 #### In SocialMotive.Core
 - Api contracts/base:
@@ -64,35 +71,19 @@
   - ITableCrudApiService
   - IExportApiService
 
-#### In SocialMotive.Frontend.Web
-- Controllers:
-  - DashboardController
-  - LookupController
-- API service implementations:
-  - DashboardApiService
-  - LookupApiService
-
-#### In SocialMotive.TrekkerGenerator.Web
-- Controllers:
+#### In SocialMotive.Web
+- **Generator Controllers:**
   - TemplatesController
   - AssetsController
   - RenderController
   - AiController
-- API service implementations:
+
+#### In SocialMotive.Web/Services/Api/
+- **Generator service implementations:**
   - TemplatesApiService
   - AssetsApiService
   - RenderApiService
   - AiApiService
-
-#### In SocialMotive.AdminBackend.Web
-- Controllers:
-  - MetadataController
-  - TableCrudController
-  - ExportController
-- API service implementations:
-  - MetadataApiService
-  - TableCrudApiService
-  - ExportApiService
 
 ### Namespaces
 
@@ -101,33 +92,29 @@
   - SocialMotive.Core.Api
   - SocialMotive.Core.Api.Abstractions
   - SocialMotive.Core.Api.Models
-- Frontend contracts:
-  - SocialMotive.Core.Frontend.Abstractions
-  - SocialMotive.Core.Frontend.Contracts
-- TrekkerGenerator contracts:
-  - SocialMotive.Core.TrekkerGenerator.Abstractions
-  - SocialMotive.Core.TrekkerGenerator.Contracts
+- Volunteer contracts:
+  - SocialMotive.Core.Volunteer.Abstractions
+  - SocialMotive.Core.Volunteer.Contracts
+- Organizer contracts:
+  - SocialMotive.Core.Organizer.Abstractions
+  - SocialMotive.Core.Organizer.Contracts
+- Generator contracts:
+  - SocialMotive.Core.Generator.Abstractions
+  - SocialMotive.Core.Generator.Contracts
 - Admin contracts:
   - SocialMotive.Core.Admin.Abstractions
   - SocialMotive.Core.Admin.Contracts
 
-#### SocialMotive.Frontend.Web
-- Controllers:
-  - SocialMotive.Frontend.Web.Controllers
-- API services:
-  - SocialMotive.Frontend.Web.Services.Api
+#### SocialMotive.Web (Unified App)
+- Controllers (in SocialMotive.Web/Controllers/):
+  - SocialMotive.Web.Controllers.Web (Volunteer/Organizer features)
+  - SocialMotive.Web.Controllers.Generator
+  - SocialMotive.Web.Controllers.Admin
 
-#### SocialMotive.TrekkerGenerator.Web
-- Controllers:
-  - SocialMotive.TrekkerGenerator.Web.Controllers
-- API services:
-  - SocialMotive.TrekkerGenerator.Web.Services.Api
-
-#### SocialMotive.AdminBackend.Web
-- Controllers:
-  - SocialMotive.AdminBackend.Web.Controllers
-- API services:
-  - SocialMotive.AdminBackend.Web.Services.Api
+- API services (in SocialMotive.Web/Services/Api/):
+  - SocialMotive.Web.Services.Api.Web
+  - SocialMotive.Web.Services.Api.Generator
+  - SocialMotive.Web.Services.Api.Admin
 
 ## DTOs (agreed scope)
 - Core canvas: CanvasDocumentDto, CanvasSizeDto, CanvasMetadataDto
@@ -150,55 +137,49 @@
   - SortDescriptorDto
   - FilterDescriptorDto
 
-#### Identity/SSO DTOs
+#### Authentication DTOs
 - Namespace: SocialMotive.Core.Api.Contracts.Identity
   - UserContextDto
   - ClaimDto
   - RoleDto
 
-#### Frontend DTOs
-- Namespace: SocialMotive.Core.Frontend.Contracts
-  - DashboardSummaryDto
-  - LookupItemDto
-  - LookupResponseDto
-
-#### TrekkerGenerator Canvas DTOs
-- Namespace: SocialMotive.Core.TrekkerGenerator.Contracts.Canvas
+#### Generator Canvas DTOs
+- Namespace: SocialMotive.Core.Generator.Contracts.Canvas
   - CanvasDocumentDto
   - CanvasSizeDto
   - CanvasMetadataDto
   - LayerOrderDto
 
-#### TrekkerGenerator Layer DTOs
-- Namespace: SocialMotive.Core.TrekkerGenerator.Contracts.Layers
+#### Generator Layer DTOs
+- Namespace: SocialMotive.Core.Generator.Contracts.Layers
   - LayerDto
   - TextLayerDto
   - ImageLayerDto
 
-#### TrekkerGenerator Asset DTOs
-- Namespace: SocialMotive.Core.TrekkerGenerator.Contracts.Assets
+#### Generator Asset DTOs
+- Namespace: SocialMotive.Core.Generator.Contracts.Assets
   - UploadAssetRequestDto
   - UploadAssetResponseDto
   - AssetDto
   - AssetListResponseDto
 
-#### TrekkerGenerator Template DTOs
-- Namespace: SocialMotive.Core.TrekkerGenerator.Contracts.Templates
+#### Generator Template DTOs
+- Namespace: SocialMotive.Core.Generator.Contracts.Templates
   - CreateTemplateRequestDto
   - UpdateTemplateRequestDto
   - TemplateSummaryDto
   - TemplateDetailDto
   - TemplateListResponseDto
 
-#### TrekkerGenerator Render DTOs
-- Namespace: SocialMotive.Core.TrekkerGenerator.Contracts.Rendering
+#### Generator Render DTOs
+- Namespace: SocialMotive.Core.Generator.Contracts.Rendering
   - RenderPngRequestDto
   - RenderPngResponseDto
   - ExportOptionsDto
   - RenderJobStatusDto
 
-#### TrekkerGenerator AI DTOs
-- Namespace: SocialMotive.Core.TrekkerGenerator.Contracts.Ai
+#### Generator AI DTOs
+- Namespace: SocialMotive.Core.Generator.Contracts.Ai
   - GenerateImageRequestDto
   - GenerateImageResponseDto
   - AiGenerationOptionsDto
@@ -217,7 +198,7 @@
   - ExportResultDto
 
 ## Entity Model (generator)
-- Users (SSO link table with external subject id)
+- Users
 - Templates
 - Assets
 - Layers
@@ -234,27 +215,27 @@
 - Locations (GPS tracking)
 - Cities, Invites, Settings, UserAccounts
 
-### SocialMotive.Frontend.Web entity mapping
+### SocialMotive.Web entity mapping (Frontend feature)
 - Frontend (volunteer portal) reads Users, Events, EventParticipants, Trackers, Groups, Labels - **NO new tables required**.
-- Uses existing SSO Users + role/group assignment for volunteers.
+- Uses existing Users + role/group assignment for volunteers.
 - May add new table: `AuditLogs` (optional, for system-wide audit trail).
 
-### SocialMotive.AdminBackend.Web entity mapping
-- Admin backend consumes **all tables** from both SocialMotive + TrekkerGenerator databases via whitelist CRUD grids.
+### SocialMotive.Web Admin entity mapping
+- Admin feature consumes **all tables** from both SocialMotive + TrekkerGenerator databases via whitelist CRUD grids.
 - May add or use existing: `AuditLogs` to track admin mutations (who changed what, when).
 - No separate domain tables; Admin is a "super-user data management interface".
 
 ### New optional table (both apps, if audit needed)
 - AuditLogs (UserId FK, TableName, Operation, OldValues, NewValues, Timestamp, IPAddress)
 
-### User mapping (SSO integration)
-- **Existing `Users` table** in SocialMotive will be extended/mapped:
-  - Add column: `ExternalSubjectId` (nullable, for OIDC/SSO subject claim)
-  - Keep existing: FirstName, LastName, Email, PasswordHash, ProfileImage, Bio, etc.
-  - SSO login will upsert Users on first authentication via ExternalSubjectId.
+### User model (local database only)
+- **Existing `Users` table** in SocialMotive stores all user data:
+  - FirstName, LastName, Email, PasswordHash, ProfileImage, Bio, etc.
+  - Roles assigned via UserRoles table (Volunteer, Organizer, Admin, AdminFull)
+  - No external subject ID mapping needed; users authenticate via local account
 
 ### DTOs for Frontend (volunteers)
-- Namespace: SocialMotive.Core.Frontend.Contracts
+- Namespace: SocialMotive.Core.Web.Contracts
   - EventDto (summary + details)
   - EventParticipantDto (registration status/hours/review)
   - UserProfileDto (own profile + settings)
@@ -296,19 +277,15 @@
   - Layers
   - RenderJobs
 
-## SSO and Security
-- Protocol: OIDC/OAuth2
-- User model: local Users table + external subject id mapping
-- Authorization source: upstream SSO claims
+## Authentication and Security
+- Protocol: Claims-based role-based access control
+- User model: local Users table only
+- Authorization source: user database roles
 - Tenant model: single tenant
-- Redirect URIs to configure:
-  - https://socialmotive.net/signin-oidc
-  - https://trekkergenerator.socialmotive.net/signin-oidc
-  - https://admin.socialmotive.net/signin-oidc
-- Also configure post-logout redirect URIs for all three.
+- No external SSO configuration required
 
 ## Admin Requirements
-- In SocialMotive.AdminBackend.Web: pages for all DB tables (both socialmotive + trekkergenerator)
+- In SocialMotive.Web: pages for all DB tables (both socialmotive + trekkergenerator)
 - UI: Telerik editable grids
 - Required actions: Read, Create, Update, Delete, Export (CSV/Excel)
 
