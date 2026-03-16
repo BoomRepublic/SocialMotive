@@ -1,0 +1,203 @@
+@page "/admin/event/{EventId:int}"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using _Event = SocialMotive.Core.Model.Admin.Event
+@using _EventType = SocialMotive.Core.Model.Admin.EventType
+@using _EventTask = SocialMotive.Core.Model.Admin.EventTask
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+@inject NavigationManager Navigation
+
+<PageTitle>Admin - @PageMode Event</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>@PageMode Event</h1>
+        <p class="text-muted">@(IsCreateMode ? "Create a new event" : $"Event ID: {EventId}")</p>
+    </div>
+
+    @if (_item == null)
+    {
+        <TelerikLoaderContainer Visible="true" Text="Loading event..." />
+    }
+    else
+    {
+        <TelerikTabStrip>
+            <TabStripTab Title="Details">
+                <TelerikForm Model="@_item"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormItems>
+                        <FormItem ColSpan="2">
+                            <Template>
+                                <div class="field-grid">
+                                    <label class="field-label">Title</label>
+                                    <TelerikTextBox @bind-Value="@_item.Title" />
+
+                                    <label class="field-label">Description</label>
+                                    <TelerikTextArea @bind-Value="@_item.Description" Rows="3" />
+
+                                    <label class="field-label">Event Type</label>
+                                    <TelerikDropDownList Data="@_eventTypes"
+                                                         TextField="Name"
+                                                         ValueField="EventTypeId"
+                                                         @bind-Value="@_item.EventTypeId"
+                                                         DefaultText="-- Select event type --" />
+
+                                    <label class="field-label">Status</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.Status" />
+
+                                    <label class="field-label">Organizer ID</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.OrganizerId" />
+
+                                    <label class="field-label">Start Date</label>
+                                    <TelerikDateTimePicker @bind-Value="@_item.StartDate" />
+
+                                    <label class="field-label">End Date</label>
+                                    <TelerikDateTimePicker @bind-Value="@_item.EndDate" />
+
+                                    <label class="field-label">City</label>
+                                    <TelerikTextBox @bind-Value="@_item.City" />
+
+                                    <label class="field-label">Max Participants</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.MaxParticipants" />
+
+                                    <label class="field-label">Verified</label>
+                                    <TelerikCheckBox @bind-Value="@_isVerified" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                        <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/events"))">Cancel</TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+                }
+            </TabStripTab>
+
+            <TabStripTab Title="Tasks" Disabled="@IsCreateMode">
+                <TelerikGrid Data="@_tasks"
+                             EditMode="@GridEditMode.Inline"
+                             OnCreate="@OnTaskCreate"
+                             OnUpdate="@OnTaskUpdate"
+                             OnDelete="@OnTaskDelete"
+                             Pageable="false"
+                             Sortable="true">
+                    <GridToolBarTemplate>
+                        <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Task</GridCommandButton>
+                    </GridToolBarTemplate>
+                    <GridColumns>
+                        <GridColumn Field="@nameof(_EventTask.Name)" Title="Name" />
+                        <GridColumn Field="@nameof(_EventTask.Description)" Title="Description" />
+                        <GridColumn Field="@nameof(_EventTask.Difficulty)" Title="Difficulty" Width="100px" />
+                        <GridColumn Field="@nameof(_EventTask.Required)" Title="Required" Width="90px" />
+                        <GridColumn Field="@nameof(_EventTask.MaxParticipants)" Title="Max" Width="80px" />
+                        <GridColumn Field="@nameof(_EventTask.HoursEstimate)" Title="Hours" Width="80px" />
+                        <GridColumn Field="@nameof(_EventTask.OrderIndex)" Title="Order" Width="80px" />
+                        <GridCommandColumn Width="140px">
+                            <GridCommandButton Command="Edit" Icon="@SvgIcon.Pencil" />
+                            <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" />
+                            <GridCommandButton Command="Save" ShowInEdit="true" />
+                            <GridCommandButton Command="Cancel" ShowInEdit="true" />
+                        </GridCommandColumn>
+                    </GridColumns>
+                </TelerikGrid>
+            </TabStripTab>
+        </TelerikTabStrip>
+    }
+</div>
+
+@code {
+    [Parameter] public int EventId { get; set; }
+
+    private _Event? _item;
+    private List<_EventType> _eventTypes = new();
+    private List<_EventTask> _tasks = new();
+    private string? _errorMessage;
+    private bool _isVerified;
+    private bool IsCreateMode => EventId == 0;
+    private string PageMode => IsCreateMode ? "Create" : "Edit";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _eventTypes = await Api.GetEventTypesAsync();
+
+        if (IsCreateMode)
+        {
+            _item = new _Event
+            {
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow
+            };
+            _isVerified = false;
+            return;
+        }
+
+        var evtTask = Api.GetEventAsync(EventId);
+        var tasksTask = Api.GetEventTasksByEventAsync(EventId);
+        await Task.WhenAll(evtTask, tasksTask);
+        _item = await evtTask;
+        _tasks = await tasksTask;
+        _isVerified = _item?.IsVerified ?? false;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_item == null) return;
+
+        _item.IsVerified = _isVerified;
+
+        _Event? result;
+        if (IsCreateMode)
+            result = await Api.CreateEventAsync(_item);
+        else
+            result = await Api.UpdateEventAsync(EventId, _item);
+
+        if (result != null)
+            Navigation.NavigateTo("/admin/events");
+        else
+            _errorMessage = "Failed to save event. Please try again.";
+    }
+
+    private async Task OnTaskCreate(GridCommandEventArgs args)
+    {
+        var task = (_EventTask)args.Item;
+        task.EventId = EventId;
+        var created = await Api.CreateEventTaskAsync(task);
+        if (created != null)
+            _tasks = await Api.GetEventTasksByEventAsync(EventId);
+    }
+
+    private async Task OnTaskUpdate(GridCommandEventArgs args)
+    {
+        var task = (_EventTask)args.Item;
+        await Api.UpdateEventTaskAsync(task.EventTaskId, task);
+        _tasks = await Api.GetEventTasksByEventAsync(EventId);
+    }
+
+    private async Task OnTaskDelete(GridCommandEventArgs args)
+    {
+        var task = (_EventTask)args.Item;
+        await Api.DeleteEventTaskAsync(task.EventTaskId);
+        _tasks = await Api.GetEventTasksByEventAsync(EventId);
+    }
+}
+
+<style>
+    .field-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 0.75rem 1rem;
+        align-items: center;
+    }
+
+    .field-label {
+        font-weight: 600;
+    }
+</style>

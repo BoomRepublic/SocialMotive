@@ -1,0 +1,70 @@
+@page "/admin/events"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using _Event = SocialMotive.Core.Model.Admin.Event
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Events</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Events</h1>
+        <p class="text-muted">Manage volunteer events</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 OnDelete="@OnDelete"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <a href="/admin/event/0" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary">
+                New Event
+            </a>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(_Event.EventId)" Title="ID" Width="80px" Editable="false" />
+            <GridColumn Field="@nameof(_Event.Title)" Title="Title" />
+            <GridColumn Field="@nameof(_Event.EventTypeId)" Title="Type ID" Width="100px" />
+            <GridColumn Field="@nameof(_Event.Status)" Title="Status" Width="100px" />
+            <GridColumn Field="@nameof(_Event.OrganizerId)" Title="Organizer ID" Width="120px" />
+            <GridColumn Field="@nameof(_Event.StartDate)" Title="Start" DisplayFormat="{0:d}" Width="120px" />
+            <GridColumn Field="@nameof(_Event.EndDate)" Title="End" DisplayFormat="{0:d}" Width="120px" />
+            <GridColumn Field="@nameof(_Event.City)" Title="City" Width="120px" />
+            <GridColumn Field="@nameof(_Event.MaxParticipants)" Title="Max" Width="80px" />
+            <GridColumn Field="@nameof(_Event.IsVerified)" Title="Verified" Width="90px" />
+            <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
+                <Template Context="rowItem">
+                    @{
+                        var item = (_Event)rowItem;
+                    }
+                    <a href="@($"/admin/event/{item.EventId}")" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">
+                        Edit
+                    </a>
+                </Template>
+            </GridColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<_Event> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetEventsAsync();
+    }
+
+    private async Task OnDelete(GridCommandEventArgs args)
+    {
+        var item = (_Event)args.Item;
+        await Api.DeleteEventAsync(item.EventId);
+        _items = await Api.GetEventsAsync();
+    }
+}

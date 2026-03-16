@@ -1,0 +1,101 @@
+@page "/profile/{username}"
+@using SocialMotive.Core.Model.Public
+@inject NavigationManager Navigation
+@inject PublicApiService PublicApiService
+
+
+@code {
+    [Parameter]
+    public string? username { get; set; }
+
+    private UserProfile? profile;
+    private bool isLoading = true;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            error = "No username specified.";
+            isLoading = false;
+            return;
+        }
+
+        try
+        {
+            profile = await PublicApiService.GetUserProfileAsync(username!);
+            if (profile == null)
+            {
+                error = "User not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            error = "Error loading profile.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
+
+<div class="sm-profile-page">
+    @if (isLoading)
+    {
+        <div class="sm-profile-loading">
+            <TelerikLoader Size="Large" />
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    else if (profile != null)
+    {
+        <div class="sm-profile-header">
+            <TelerikAvatar ImageUrl="@profile.AvatarUrl" Alt="@profile.DisplayName" Size="Large" />
+            <h2>@profile.DisplayName</h2>
+            <span class="sm-profile-username">@("@" + profile.Username)</span>
+        </div>
+        <div class="sm-profile-bio">
+            @if (!string.IsNullOrWhiteSpace(profile.Bio))
+            {
+                <p>@profile.Bio</p>
+            }
+        </div>
+        <div class="sm-profile-stats">
+            <TelerikCard>
+                <CardHeader>
+                    <strong>Events Attended</strong>
+                </CardHeader>
+                <CardBody>
+                    @profile.EventsAttended
+                </CardBody>
+            </TelerikCard>
+            <TelerikCard>
+                <CardHeader>
+                    <strong>Hours Volunteered</strong>
+                </CardHeader>
+                <CardBody>
+                    @profile.HoursVolunteered
+                </CardBody>
+            </TelerikCard>
+        </div>
+        @if (profile.RecentEvents?.Any() == true)
+        {
+            <div class="sm-profile-events">
+                <h4>Recent Events</h4>
+                <TelerikListView Data="@profile.RecentEvents" Pageable="false">
+                    <Template Context="evt">
+                        <div class="sm-profile-event">
+                            <strong>@evt.Title</strong>
+                            <span class="sm-profile-event-date">@evt.Date.ToString("MMM dd, yyyy")</span>
+                        </div>
+                    </Template>
+                </TelerikListView>
+            </div>
+        }
+    }
+</div>
+

@@ -1,0 +1,283 @@
+﻿@inherits LayoutComponentBase
+
+@implements IDisposable
+
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+
+<TelerikRootComponent IconType="@IconType.Font">
+
+    <TelerikAppBar ThemeColor="@ThemeConstants.AppBar.ThemeColor.Base" Class="appbar-top">
+        <AppBarSection>
+            @* Menu toggle removed - TelerikMenu handles its own display *@
+        </AppBarSection>
+        <AppBarSection>
+            <div id="app-title">
+                <NavLink href="/"><strong>SocialMotive</strong>
+                </NavLink>
+            </div>
+        </AppBarSection>
+        <AppBarSpacer />
+        <AppBarSection>
+            <TelerikDropDownList Data="@ThemeOptions"
+                                 TextField="Text"
+                                 ValueField="Value"
+                                 Value="@SelectedTheme"
+                                 OnChange="@OnThemeChanged"
+                                 Width="130px"
+                                 Class="theme-selector" />
+        </AppBarSection>
+        <AppBarSection>
+            @if (IsAuthenticated)
+            {
+                <TelerikDropDownButton Icon="@FontIcon.User" FillMode="@ThemeConstants.Button.FillMode.Flat">
+                    <DropDownButtonContent>
+                        <span class="user-display-name">@UserDisplayName</span>
+                    </DropDownButtonContent>
+                    <DropDownButtonItems>
+                        <DropDownButtonItem Icon="@FontIcon.User" OnClick="@NavigateToProfile">Profile</DropDownButtonItem>
+                        <DropDownButtonItem Icon="@FontIcon.Gear" OnClick="@NavigateToSettings">Settings
+                        </DropDownButtonItem>
+                        <DropDownButtonItem Icon="@FontIcon.Logout" OnClick="@Logout">Logout</DropDownButtonItem>
+                    </DropDownButtonItems>
+                </TelerikDropDownButton>
+            }
+            else
+            {
+                <TelerikButton Icon="@FontIcon.Login" FillMode="@ThemeConstants.Button.FillMode.Flat"
+                               OnClick="@NavigateToLogin">Login</TelerikButton>
+                <TelerikButton Icon="@FontIcon.Plus" FillMode="@ThemeConstants.Button.FillMode.Flat"
+                               ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" OnClick="@NavigateToRegister">Register
+                </TelerikButton>
+            }
+        </AppBarSection>
+    </TelerikAppBar>
+
+    @if (LargeScreen)
+    {
+        <div class="main-content-wrapper sidebar-layout">
+            <nav class="sidebar">
+                <TelerikMenu Data="@MenuData"
+                             TextField="Text"
+                             UrlField="Url"
+                             IconField="Icon"
+                             ItemsField="Children"
+                             Orientation="@MenuOrientation.Vertical"
+                             OnClick="@((NavItem item) => OnMenuItemClick(item))"
+                             Class="mainlayout-menu">
+                </TelerikMenu>
+            </nav>
+            <main>
+                @Body
+            </main>
+        </div>
+    }
+    else
+    {
+        <div class="main-content-wrapper">
+            <TelerikMenu Data="@MenuData"
+                         TextField="Text"
+                         UrlField="Url"
+                         IconField="Icon"
+                         ItemsField="Children"
+                         OnClick="@((NavItem item) => OnMenuItemClick(item))"
+                         Class="mainlayout-menu">
+            </TelerikMenu>
+            <main>
+                @Body
+            </main>
+        </div>
+    }
+
+    <TelerikAppBar ThemeColor="@ThemeConstants.AppBar.ThemeColor.Base" Class="appbar-bottom">
+        <AppBarSpacer />
+        <AppBarSection>
+            <div id="copyright">Copyright &copy; @DateTime.Today.Year Progress Software. All rights reserved.</div>
+        </AppBarSection>
+        <AppBarSpacer />
+    </TelerikAppBar>
+
+    <TelerikMediaQuery Media="(min-width: 641px)" OnChange="@OnMediaQueryChange" />
+
+</TelerikRootComponent>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    private bool IsAuthenticated { get; set; }
+    private string UserDisplayName { get; set; } = "Guest";
+    private string UserRole { get; set; } = string.Empty;
+    private bool IsAdmin { get; set; }
+    private string SelectedTheme { get; set; } = AppThemes.DefaultTheme;
+
+    private static IReadOnlyList<AppTheme> ThemeOptions => AppThemes.All;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAuthenticationState();
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        await LoadAuthenticationState();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadAuthenticationState()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        IsAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        
+        if (IsAuthenticated)
+        {
+            UserDisplayName = user.FindFirst(ClaimTypes.Name)?.Value
+                ?? user.FindFirst(ClaimTypes.Email)?.Value
+                ?? "User";
+            UserRole = user.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+            IsAdmin = user.IsInRole("Admin");
+        }
+        else
+        {
+            UserDisplayName = "Guest";
+            UserRole = string.Empty;
+            IsAdmin = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var storedTheme = await JSRuntime.InvokeAsync<string?>("socialMotiveTheme.get");
+            SelectedTheme = AppThemes.GetByValue(storedTheme).Value;
+            await ApplyThemeAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (JSException)
+        {
+            SelectedTheme = AppThemes.DefaultTheme;
+        }
+    }
+
+    private void NavigateToLogin() => NavManager.NavigateTo("/login");
+    private void NavigateToRegister() => NavManager.NavigateTo("/register");
+    private void NavigateToProfile() => NavManager.NavigateTo("/profile");
+    private void NavigateToSettings() => NavManager.NavigateTo("/settings");
+
+    private async Task OnThemeChanged(object value)
+    {
+        SelectedTheme = AppThemes.GetByValue(value?.ToString()).Value;
+        await ApplyThemeAsync();
+    }
+
+    private async Task ApplyThemeAsync()
+    {
+        var theme = AppThemes.GetByValue(SelectedTheme);
+        await JSRuntime.InvokeVoidAsync("socialMotiveTheme.apply", theme.Value, theme.StylesheetUrl);
+    }
+    
+    private void Logout()
+    {
+        // Navigate to logout endpoint with force reload to clear auth state
+        NavManager.NavigateTo("/api/auth/demo-logout", forceLoad: true);
+    }
+
+    private IEnumerable<NavItem> MenuData => IsAdmin ? AllNavItems : AllNavItems.Where(x => x.Text != "Admin");
+
+    private static readonly List<NavItem> AllNavItems = new()
+    {
+        new NavItem("Home", FontIcon.Home, "/"),
+                new NavItem("Admin", FontIcon.Gear, "/admin", new List<NavItem>()
+        {
+                        new NavItem("Dashboard", FontIcon.Home, "/admin"),
+                        new NavItem("Events", FontIcon.Calendar, "/admin/events"),
+                        new NavItem("Invites", FontIcon.Plus, "/admin/invites"),
+                        new NavItem("Locations", FontIcon.Home, "/admin/locations"),
+                        new NavItem("Organizations", FontIcon.User, "/admin/organizations"),
+                        new NavItem("Trackers", FontIcon.Heart, "/admin/trackers"),
+                        new NavItem("Users", FontIcon.User, "/admin/users"),
+                    new NavItem("Generator", FontIcon.Gear, null, new List<NavItem>()
+            {
+                                new NavItem("Assets", FontIcon.Plus, "/admin/generator/assets"),
+                                new NavItem("Layers", FontIcon.Gear, "/admin/generator/layers"),
+                                new NavItem("Render Jobs", FontIcon.Wrench, "/admin/generator/renderjobs"),
+                                new NavItem("Templates", FontIcon.InfoCircle, "/admin/generator/templates")
+            }),
+        
+                new NavItem("Advanced", FontIcon.Gear, null, new List<NavItem>()
+                {
+                    new NavItem("Cities", FontIcon.Home, "/admin/cities"),
+                    new NavItem("Event Types", FontIcon.Calendar, "/admin/event-types"),
+                    new NavItem("Groups", FontIcon.User, "/admin/groups"),
+                    new NavItem("Labels", FontIcon.InfoCircle, "/admin/labels"),
+                    new NavItem("Settings", FontIcon.Gear, "/admin/settings"),
+                }),
+                new NavItem("Tools", FontIcon.Wrench, null, new List<NavItem>()
+                {
+                    new NavItem("Import Data", FontIcon.Upload, "/admin/tools/import")
+                })
+          
+        }),
+                        new NavItem("Over ons", FontIcon.InfoCircle, "/about")
+
+    };
+
+    private bool LargeScreen { get; set; } = true;
+
+    private void OnMediaQueryChange(bool mediaQueryMatched)
+    {
+        LargeScreen = mediaQueryMatched;
+        StateHasChanged();
+    }
+
+    private void OnMenuItemClick(NavItem item)
+    {
+        if (!string.IsNullOrEmpty(item.Url))
+        {
+            NavManager.NavigateTo(item.Url);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        if (AuthStateProvider != null)
+        {
+            AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        }
+    }
+
+    public class NavItem
+    {
+        public string Text { get; set; }
+        public object? Icon { get; set; }
+        public string? Url { get; set; } = string.Empty;
+        public List<NavItem>? Children { get; set; }
+
+        public NavItem(string text, object? icon, string? url, List<NavItem>? children = null)
+        {
+            Text = text;
+            Icon = icon;
+            Url = url;
+            Children = children;
+        }
+    }
+
+}

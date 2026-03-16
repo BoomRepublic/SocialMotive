@@ -1,0 +1,106 @@
+@page "/admin/event-type/{EventTypeId:int}"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using _EventType = SocialMotive.Core.Model.Admin.EventType
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+@inject NavigationManager Navigation
+
+<PageTitle>Admin - @PageMode Event Type</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>@PageMode Event Type</h1>
+        <p class="text-muted">@(IsCreateMode ? "Create a new event type" : $"Event Type ID: {EventTypeId}")</p>
+    </div>
+
+    @if (_item == null)
+    {
+        <TelerikLoaderContainer Visible="true" Text="Loading event type..." />
+    }
+    else
+    {
+        <TelerikForm Model="@_item"
+                     OnValidSubmit="@HandleValidSubmit"
+                     ValidationMessageType="@FormValidationMessageType.Tooltip">
+            <FormItems>
+                <FormItem ColSpan="2">
+                    <Template>
+                        <div class="field-grid">
+                            <label class="field-label">Name</label>
+                            <TelerikTextBox @bind-Value="@_item.Name" />
+
+                            <label class="field-label">Description</label>
+                            <TelerikTextArea @bind-Value="@_item.Description" Rows="3" />
+
+                            <label class="field-label">Icon</label>
+                            <TelerikTextBox @bind-Value="@_item.Icon" />
+
+                            <label class="field-label">Color</label>
+                            <TelerikTextBox @bind-Value="@_item.Color" />
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormItems>
+            <FormButtons>
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/event-types"))">Cancel</TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int EventTypeId { get; set; }
+
+    private _EventType? _item;
+    private string? _errorMessage;
+    private bool IsCreateMode => EventTypeId == 0;
+    private string PageMode => IsCreateMode ? "Create" : "Edit";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsCreateMode)
+        {
+            _item = new _EventType();
+            return;
+        }
+
+        _item = await Api.GetEventTypeAsync(EventTypeId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_item == null) return;
+
+        _EventType? result;
+        if (IsCreateMode)
+            result = await Api.CreateEventTypeAsync(_item);
+        else
+            result = await Api.UpdateEventTypeAsync(EventTypeId, _item);
+
+        if (result != null)
+            Navigation.NavigateTo("/admin/event-types");
+        else
+            _errorMessage = "Failed to save event type. Please try again.";
+    }
+}
+
+<style>
+    .field-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 0.75rem 1rem;
+        align-items: center;
+    }
+
+    .field-label {
+        font-weight: 600;
+    }
+</style>

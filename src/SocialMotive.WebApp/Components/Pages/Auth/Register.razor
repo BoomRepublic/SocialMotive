@@ -1,0 +1,149 @@
+@page "/auth/register"
+@page "/register"
+@rendermode InteractiveServer
+@inject NavigationManager NavManager
+
+<PageTitle>Create Account - SocialMotive</PageTitle>
+
+<div class="k-d-flex k-justify-content-center k-align-items-center k-min-h-full k-py-8">
+    <div class="k-col-size-100 k-col-md-size-50 k-col-lg-size-33-3 k-px-4">
+        <TelerikCard Width="100%" Class="k-elevation-4">
+            <CardHeader Class="k-text-center k-pb-0">
+                <CardTitle>
+                    <span class="k-icon k-i-user k-font-size-xl k-mr-2"></span>
+                    Create Account
+                </CardTitle>
+                <p class="k-text-secondary k-mt-1 k-mb-0">Join SocialMotive today</p>
+            </CardHeader>
+            <CardBody>
+                <TelerikForm Model="@RegisterModel"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormValidation>
+                        <DataAnnotationsValidator />
+                    </FormValidation>
+                    <FormItems>
+                        <div class="k-d-flex k-gap-4">
+                            <FormItem Field="@nameof(RegisterFormModel.FirstName)" 
+                                      LabelText="First Name" 
+                                      Class="k-flex-1">
+                                <Template>
+                                    <TelerikTextBox @bind-Value="@RegisterModel.FirstName"
+                                                    Placeholder="John"
+                                                    Id="firstName"
+                                                    Width="100%" />
+                                </Template>
+                            </FormItem>
+                            <FormItem Field="@nameof(RegisterFormModel.LastName)" 
+                                      LabelText="Last Name"
+                                      Class="k-flex-1">
+                                <Template>
+                                    <TelerikTextBox @bind-Value="@RegisterModel.LastName"
+                                                    Placeholder="Doe"
+                                                    Id="lastName"
+                                                    Width="100%" />
+                                </Template>
+                            </FormItem>
+                        </div>
+                        <FormItem Field="@nameof(RegisterFormModel.Email)" LabelText="Email Address">
+                            <Template>
+                                <TelerikTextBox @bind-Value="@RegisterModel.Email"
+                                                Placeholder="you@example.com"
+                                                Id="email"
+                                                Width="100%" />
+                            </Template>
+                        </FormItem>
+                        <FormItem Field="@nameof(RegisterFormModel.Password)" LabelText="Password">
+                            <Template>
+                                <TelerikTextBox @bind-Value="@RegisterModel.Password"
+                                                Password="true"
+                                                Placeholder="Create a strong password"
+                                                Id="password"
+                                                Width="100%" />
+                            </Template>
+                        </FormItem>
+                        <FormItem Field="@nameof(RegisterFormModel.ConfirmPassword)" LabelText="Confirm Password">
+                            <Template>
+                                <TelerikTextBox @bind-Value="@RegisterModel.ConfirmPassword"
+                                                Password="true"
+                                                Placeholder="Re-enter your password"
+                                                Id="confirmPassword"
+                                                Width="100%" />
+                            </Template>
+                        </FormItem>
+                        <FormItem Field="@nameof(RegisterFormModel.AgreeToTerms)">
+                            <Template>
+                                <div class="k-d-flex k-align-items-center k-gap-2 k-mt-2">
+                                    <TelerikCheckBox @bind-Value="@RegisterModel.AgreeToTerms" Id="terms" />
+                                    <label for="terms" class="k-cursor-pointer">
+                                        I agree to the <a href="/terms" class="k-text-primary">Terms of Service</a>
+                                    </label>
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ButtonType="@ButtonType.Submit"
+                                       ThemeColor="@ThemeConstants.Button.ThemeColor.Primary"
+                                       Size="@ThemeConstants.Button.Size.Large"
+                                       Class="k-w-full k-mt-4"
+                                       Icon="@FontIcon.Plus">
+                            Create Account
+                        </TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
+            </CardBody>
+            <CardSeparator />
+            <CardActions Layout="CardActionsLayout.Center" Class="k-pb-4">
+                <span class="k-text-secondary">Already have an account?</span>
+                <TelerikButton FillMode="@ThemeConstants.Button.FillMode.Link"
+                               OnClick="@NavigateToLogin">
+                    Sign in here
+                </TelerikButton>
+            </CardActions>
+        </TelerikCard>
+    </div>
+</div>
+
+@code {
+    private RegisterFormModel RegisterModel { get; set; } = new();
+
+    private async Task HandleValidSubmit()
+    {
+        // TODO: Implement actual registration logic
+        // For now, just navigate to login on successful submission
+        await Task.Delay(500); // Simulate API call
+        NavManager.NavigateTo("/login");
+    }
+
+    private void NavigateToLogin()
+    {
+        NavManager.NavigateTo("/login");
+    }
+
+    public class RegisterFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "First name is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Last name is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
+        public string LastName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Password is required")]
+        [System.ComponentModel.DataAnnotations.MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
+        public string Password { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please confirm your password")]
+        [System.ComponentModel.DataAnnotations.Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the terms")]
+        public bool AgreeToTerms { get; set; }
+    }
+}

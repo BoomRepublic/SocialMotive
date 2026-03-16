@@ -1,0 +1,115 @@
+@page "/admin/organization/{OrganizationId:int}"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using AdminOrganization = SocialMotive.Core.Model.Admin.Organization
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+@inject NavigationManager Navigation
+
+<PageTitle>Admin - @PageMode Organization</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>@PageMode Organization</h1>
+        <p class="text-muted">@(IsCreateMode ? "Create a new organization" : $"Organization ID: {OrganizationId}")</p>
+    </div>
+
+    @if (_item == null)
+    {
+        <TelerikLoaderContainer Visible="true" Text="Loading organization..." />
+    }
+    else
+    {
+        <TelerikForm Model="@_item"
+                     OnValidSubmit="@HandleValidSubmit"
+                     ValidationMessageType="@FormValidationMessageType.Tooltip">
+            <FormItems>
+                <FormItem ColSpan="2">
+                    <Template>
+                        <div class="field-grid">
+                            <label class="field-label">Name</label>
+                            <TelerikTextBox @bind-Value="@_item.Name" />
+
+                            @if (!IsCreateMode)
+                            {
+                                <label class="field-label">Owned By</label>
+                                <span>@(_item.OwnedBy?.ToString() ?? "—")</span>
+
+                                <label class="field-label">Created By</label>
+                                <span>@(_item.CreatedBy?.ToString() ?? "—")</span>
+
+                                <label class="field-label">Modified By</label>
+                                <span>@(_item.ModifiedBy?.ToString() ?? "—")</span>
+
+                                <label class="field-label">Created At</label>
+                                <span>@(_item.CreatedAt?.ToString("g") ?? "—")</span>
+
+                                <label class="field-label">Modified At</label>
+                                <span>@(_item.ModifiedAt?.ToString("g") ?? "—")</span>
+                            }
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormItems>
+            <FormButtons>
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/organizations"))">Cancel</TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int OrganizationId { get; set; }
+
+    private AdminOrganization? _item;
+    private string? _errorMessage;
+    private bool IsCreateMode => OrganizationId == 0;
+    private string PageMode => IsCreateMode ? "Create" : "Edit";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsCreateMode)
+        {
+            _item = new AdminOrganization();
+            return;
+        }
+
+        _item = await Api.GetOrganizationAsync(OrganizationId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_item == null) return;
+
+        AdminOrganization? result;
+        if (IsCreateMode)
+            result = await Api.CreateOrganizationAsync(_item);
+        else
+            result = await Api.UpdateOrganizationAsync(OrganizationId, _item);
+
+        if (result != null)
+            Navigation.NavigateTo("/admin/organizations");
+        else
+            _errorMessage = "Failed to save organization. Please try again.";
+    }
+}
+
+<style>
+    .field-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 0.75rem 1rem;
+        align-items: center;
+    }
+
+    .field-label {
+        font-weight: 600;
+    }
+</style>

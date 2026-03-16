@@ -1,0 +1,66 @@
+@page "/admin/groups"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using AdminGroup = SocialMotive.Core.Model.Admin.Group
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Groups</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Groups</h1>
+        <p class="text-muted">Manage tracker groups</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 OnDelete="@OnDelete"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <a href="/admin/group/0" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary">
+                New Group
+            </a>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(AdminGroup.GroupId)" Title="ID" Width="80px" />
+            <GridColumn Field="@nameof(AdminGroup.NameDisplay)" Title="Name">
+                <Template Context="rowItem">
+                    @{ var item = (AdminGroup)rowItem; }
+                    @((MarkupString)(item.NameDisplay ?? string.Empty))
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@nameof(AdminGroup.IconType)" Title="Icon" Width="120px" />
+            <GridColumn Field="@nameof(AdminGroup.Level)" Title="Level" Width="80px" />
+            <GridColumn Field="@nameof(AdminGroup.Publish)" Title="Published" Width="100px" />
+            <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
+                <Template Context="rowItem">
+                    @{ var item = (AdminGroup)rowItem; }
+                    <a href="@($"/admin/group/{item.GroupId}")" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Edit</a>
+                </Template>
+            </GridColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<AdminGroup> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetGroupsAsync();
+    }
+
+    private async Task OnDelete(GridCommandEventArgs args)
+    {
+        var item = (AdminGroup)args.Item;
+        await Api.DeleteGroupAsync(item.GroupId);
+        _items = await Api.GetGroupsAsync();
+    }
+}

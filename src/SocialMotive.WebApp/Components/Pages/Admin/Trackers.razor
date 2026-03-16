@@ -1,0 +1,68 @@
+@page "/admin/trackers"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using _Tracker = SocialMotive.Core.Model.Admin.Tracker
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Trackers</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Trackers</h1>
+        <p class="text-muted">Manage tracker records</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 OnDelete="@OnDelete"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <a href="/admin/tracker/0" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary">
+                New Tracker
+            </a>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(_Tracker.TrackerId)" Title="ID" Width="80px" Editable="false" />
+            <GridColumn Field="@nameof(_Tracker.DisplayName)" Title="Display Name" />
+            <GridColumn Field="@nameof(_Tracker.Email)" Title="Email" />
+            <GridColumn Field="@nameof(_Tracker.Mobile)" Title="Mobile" Width="140px" />
+            <GridColumn Field="@nameof(_Tracker.GroupId)" Title="Group ID" Width="100px" />
+            <GridColumn Field="@nameof(_Tracker.CityId)" Title="City ID" Width="100px" />
+            <GridColumn Field="@nameof(_Tracker.IsAdmin)" Title="Admin" Width="90px" />
+            <GridColumn Field="@nameof(_Tracker.JoinedAt)" Title="Joined" DisplayFormat="{0:d}" Width="120px" Editable="false" />
+            <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
+                <Template Context="rowItem">
+                    @{
+                        var tracker = (_Tracker)rowItem;
+                    }
+                    <a href="@($"/admin/tracker/{tracker.TrackerId}")" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">
+                        Edit
+                    </a>
+                </Template>
+            </GridColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<_Tracker> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetTrackersAsync();
+    }
+
+    private async Task OnDelete(GridCommandEventArgs args)
+    {
+        var item = (_Tracker)args.Item;
+        await Api.DeleteTrackerAsync(item.TrackerId);
+        _items = await Api.GetTrackersAsync();
+    }
+}

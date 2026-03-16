@@ -1,0 +1,67 @@
+@page "/admin/labels"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using AdminLabel = SocialMotive.Core.Model.Admin.Label
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Labels</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Labels</h1>
+        <p class="text-muted">Manage labels and tags</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 OnDelete="@OnDelete"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <a href="/admin/label/0" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary">
+                New Label
+            </a>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(AdminLabel.LabelId)" Title="ID" Width="80px" Editable="false" />
+            <GridColumn Field="@nameof(AdminLabel.Name)" Title="Name" />
+            <GridColumn Field="@nameof(AdminLabel.ColorHex)" Title="Color" Width="100px" />
+            <GridColumn Field="@nameof(AdminLabel.IconType)" Title="Icon" Width="120px" />
+            <GridColumn Field="@nameof(AdminLabel.LabelType)" Title="Type" Width="120px" />
+            <GridColumn Field="@nameof(AdminLabel.Level)" Title="Level" Width="80px" />
+            <GridColumn Field="@nameof(AdminLabel.Publish)" Title="Published" Width="100px" />
+            <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
+                <Template Context="rowItem">
+                    @{
+                        var item = (AdminLabel)rowItem;
+                    }
+                    <a href="@($"/admin/label/{item.LabelId}")" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">
+                        Edit
+                    </a>
+                </Template>
+            </GridColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<AdminLabel> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetLabelsAsync();
+    }
+
+    private async Task OnDelete(GridCommandEventArgs args)
+    {
+        var item = (AdminLabel)args.Item;
+        await Api.DeleteLabelAsync(item.LabelId);
+        _items = await Api.GetLabelsAsync();
+    }
+}

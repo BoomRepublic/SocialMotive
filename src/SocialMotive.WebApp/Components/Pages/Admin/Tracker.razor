@@ -1,0 +1,143 @@
+@page "/admin/tracker/{TrackerId:int}"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using _Tracker = SocialMotive.Core.Model.Admin.Tracker
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+@inject NavigationManager Navigation
+
+<PageTitle>Admin - @PageMode Tracker</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>@PageMode Tracker</h1>
+        <p class="text-muted">@(IsCreateMode ? "Create a new tracker" : $"Tracker ID: {TrackerId}")</p>
+    </div>
+
+    @if (_item == null)
+    {
+        <TelerikLoaderContainer Visible="true" Text="Loading tracker..." />
+    }
+    else
+    {
+        <TelerikForm Model="@_item"
+                     OnValidSubmit="@HandleValidSubmit"
+                     ValidationMessageType="@FormValidationMessageType.Tooltip">
+            <FormItems>
+                <FormItem ColSpan="2">
+                    <Template>
+                        <div class="field-grid">
+                            <label class="field-label">Display Name</label>
+                            <TelerikTextBox @bind-Value="@_item.DisplayName" />
+
+                            <label class="field-label">Email</label>
+                            <TelerikTextBox @bind-Value="@_item.Email" />
+
+                            <label class="field-label">Mobile</label>
+                            <TelerikTextBox @bind-Value="@_item.Mobile" />
+
+                            <label class="field-label">Phone</label>
+                            <TelerikTextBox @bind-Value="@_item.Phone" />
+
+                            <label class="field-label">Group ID</label>
+                            <TelerikNumericTextBox @bind-Value="@_item.GroupId" />
+
+                            <label class="field-label">City ID</label>
+                            <TelerikNumericTextBox @bind-Value="@_item.CityId" />
+
+                            <label class="field-label">Is Admin</label>
+                            <TelerikCheckBox @bind-Value="@_isAdmin" />
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormItems>
+            <FormButtons>
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/trackers"))">Cancel</TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int TrackerId { get; set; }
+
+    private _Tracker? _item;
+    private string? _errorMessage;
+    private bool _isAdmin;
+    private bool IsCreateMode => TrackerId == 0;
+    private string PageMode => IsCreateMode ? "Create" : "Edit";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsCreateMode)
+        {
+            _item = new _Tracker();
+            _isAdmin = false;
+            return;
+        }
+
+        _item = await Api.GetTrackerAsync(TrackerId);
+        _isAdmin = _item?.IsAdmin ?? false;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_item == null) return;
+
+        _item.IsAdmin = _isAdmin;
+
+        _Tracker? result;
+        if (IsCreateMode)
+        {
+            result = await Api.CreateTrackerAsync(_item);
+        }
+        else
+        {
+            var updateRequest = new TrackerUpdateRequest
+            {
+                DisplayName = _item.DisplayName,
+                Phone = _item.Phone,
+                Email = _item.Email,
+                Mobile = _item.Mobile,
+                LicensePlate = _item.LicensePlate,
+                InviteName = _item.InviteName,
+                CheckIn = _item.CheckIn,
+                CheckInTime = _item.CheckInTime,
+                CheckInLat = _item.CheckInLat,
+                CheckInLon = _item.CheckInLon,
+                GroupId = _item.GroupId,
+                TrackerRoleId = _item.TrackerRoleId,
+                CityId = _item.CityId,
+                IsAdmin = _isAdmin,
+                InviteId = _item.InviteId,
+                UserId = _item.UserId,
+            };
+            result = await Api.UpdateTrackerAsync(TrackerId, updateRequest);
+        }
+
+        if (result != null)
+            Navigation.NavigateTo("/admin/trackers");
+        else
+            _errorMessage = "Failed to save tracker. Please try again.";
+    }
+}
+
+<style>
+    .field-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 0.75rem 1rem;
+        align-items: center;
+    }
+
+    .field-label {
+        font-weight: 600;
+    }
+</style>

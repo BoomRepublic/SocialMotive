@@ -1,0 +1,141 @@
+@page "/auth/login"
+@page "/login"
+@rendermode InteractiveServer
+@inject NavigationManager NavManager
+
+<PageTitle>Sign In - SocialMotive</PageTitle>
+
+<div class="k-d-flex k-justify-content-center k-align-items-center k-min-h-full k-py-8">
+    <div class="k-col-size-100 k-col-md-size-50 k-col-lg-size-33-3 k-px-4">
+        <div class="k-text-center k-mb-8">
+            <span class="k-icon k-i-user k-font-size-xl k-text-primary k-mb-4" style="font-size: 3rem;"></span>
+            <h1 class="k-h2 k-mb-2">Welcome Back</h1>
+            <p class="k-text-secondary">Sign in to continue to SocialMotive</p>
+        </div>
+
+        <TelerikForm Model="@LoginModel"
+                     OnValidSubmit="@HandleValidSubmit"
+                     ValidationMessageType="@FormValidationMessageType.Tooltip"
+                     Class="k-form-lg">
+            <FormValidation>
+                <DataAnnotationsValidator />
+            </FormValidation>
+            <FormItems>
+                <FormItem Field="@nameof(LoginFormModel.Email)" LabelText="Email Address">
+                    <Template>
+                        <TelerikTextBox @bind-Value="@LoginModel.Email"
+                                        Placeholder="you@example.com"
+                                        Id="email"
+                                        Width="100%" />
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(LoginFormModel.Password)" LabelText="Password">
+                    <Template>
+                        <TelerikTextBox @bind-Value="@LoginModel.Password"
+                                        Password="true"
+                                        Placeholder="Enter your password"
+                                        Id="password"
+                                        Width="100%" />
+                    </Template>
+                </FormItem>
+                <FormItem Field="@nameof(LoginFormModel.RememberMe)">
+                    <Template>
+                        <div class="k-d-flex k-justify-content-between k-align-items-center k-mt-2">
+                            <div class="k-d-flex k-align-items-center k-gap-2">
+                                <TelerikCheckBox @bind-Value="@LoginModel.RememberMe" Id="remember" />
+                                <label for="remember" class="k-cursor-pointer">Remember me</label>
+                            </div>
+                            <TelerikButton FillMode="@ThemeConstants.Button.FillMode.Link"
+                                           OnClick="@NavigateToForgotPassword"
+                                           Class="k-p-0">
+                                Forgot password?
+                            </TelerikButton>
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormItems>
+            <FormButtons>
+                <TelerikButton ButtonType="@ButtonType.Submit"
+                               ThemeColor="@ThemeConstants.Button.ThemeColor.Primary"
+                               Size="@ThemeConstants.Button.Size.Large"
+                               Class="k-w-full k-mt-4"
+                               Icon="@FontIcon.Login">
+                    Sign In
+                </TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+
+        <div class="k-text-center k-mt-6">
+            <span class="k-text-secondary">Don't have an account?</span>
+            <TelerikButton FillMode="@ThemeConstants.Button.FillMode.Link"
+                           OnClick="@NavigateToRegister">
+                Register here
+            </TelerikButton>
+        </div>
+
+        <div class="k-d-flex k-align-items-center k-gap-4 k-my-6">
+            <hr class="k-flex-1" />
+            <span class="k-text-secondary k-font-size-sm">Or continue as</span>
+            <hr class="k-flex-1" />
+        </div>
+
+        <TelerikStackLayout Orientation="@StackLayoutOrientation.Vertical" 
+                            Spacing="12px"
+                            Class="k-w-full">
+            <TelerikButton FillMode="@ThemeConstants.Button.FillMode.Outline"
+                           Size="@ThemeConstants.Button.Size.Large"
+                           Class="k-w-full"
+                           Icon="@FontIcon.Heart"
+                           OnClick="@(() => LoginAsRole("volunteer"))">
+                Login as Volunteer
+            </TelerikButton>
+            <TelerikButton FillMode="@ThemeConstants.Button.FillMode.Outline"
+                           Size="@ThemeConstants.Button.Size.Large"
+                           Class="k-w-full"
+                           Icon="@FontIcon.Calendar"
+                           OnClick="@(() => LoginAsRole("organizer"))">
+                Login as Organizer
+            </TelerikButton>
+            <TelerikButton FillMode="@ThemeConstants.Button.FillMode.Outline"
+                           ThemeColor="@ThemeConstants.Button.ThemeColor.Error"
+                           Size="@ThemeConstants.Button.Size.Large"
+                           Class="k-w-full"
+                           Icon="@FontIcon.Gear"
+                           OnClick="@(() => LoginAsRole("admin"))">
+                Login as Admin
+            </TelerikButton>
+        </TelerikStackLayout>
+    </div>
+</div>
+
+@code {
+    private LoginFormModel LoginModel { get; set; } = new();
+
+    private async Task HandleValidSubmit()
+    {
+        // TODO: Implement actual login logic
+        await Task.Delay(500); // Simulate API call
+        NavManager.NavigateTo("/");
+    }
+
+    private void NavigateToRegister() => NavManager.NavigateTo("/register");
+    private void NavigateToForgotPassword() => NavManager.NavigateTo("/auth/forgotpassword");
+
+    private void LoginAsRole(string role)
+    {
+        // Navigate to demo login endpoint which sets auth cookies and redirects
+        NavManager.NavigateTo($"/api/auth/demo-login/{role}?returnUrl=/", forceLoad: true);
+    }
+
+    public class LoginFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Password is required")]
+        public string Password { get; set; } = string.Empty;
+
+        public bool RememberMe { get; set; }
+    }
+}

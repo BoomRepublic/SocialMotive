@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :5070)",
+      "Bash(taskkill /PID 12716 /F)",
+      "Bash(cmd /c \"taskkill /PID 12716 /F\")",
+      "Bash(findstr 12716)",
+      "Bash(powershell -Command \"Stop-Process -Id 12716 -Force\")"
+    ]
+  }
+}

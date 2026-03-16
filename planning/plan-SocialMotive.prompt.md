@@ -13,7 +13,7 @@
   - Features by role:
     - Volunteer Dashboard (`/volunteer/events`, `/volunteer/my-events`, `/volunteer/profile`) — for volunteers
     - Organizer Dashboard (`/organizer/events`, `/organizer/my-events`, `/organizer/profile`) — for organizers
-    - TrekkerGenerator Editor (`/generator`) — for volunteers
+    - AssetGenerator Editor (`/generator`) — for volunteers
     - Admin Dashboard (`/admin`) — for admins only
   - API: All endpoints on same `/api` base (https://socialmotive.net/api)
   - All api controllers in same app seperated by roles/areas (no separate apps)
@@ -61,7 +61,7 @@
 - Frontend service contracts:
   - IDashboardApiService
   - ILookupApiService
-- TrekkerGenerator service contracts:
+- AssetGenerator service contracts:
   - ITemplatesApiService
   - IAssetsApiService
   - IRenderApiService
@@ -116,18 +116,18 @@
   - SocialMotive.Web.Services.Api.Generator
   - SocialMotive.Web.Services.Api.Admin
 
-## DTOs (agreed scope)
+## Dto (agreed scope)
 - Core canvas: CanvasDocumentDto, CanvasSizeDto, CanvasMetadataDto
 - Layers: LayerDto, TextLayerDto, ImageLayerDto
 - Assets: UploadAssetRequestDto, UploadAssetResponseDto, AssetDto
 - Templates: CreateTemplateRequestDto, UpdateTemplateRequestDto, TemplateSummaryDto, TemplateDetailDto
 - Render/export: RenderPngRequestDto, RenderPngResponseDto, ExportOptionsDto
 - AI-ready (provider-agnostic): GenerateImageRequestDto, GenerateImageResponseDto
-- API standardization: ApiErrorDto, ValidationErrorDto, paging DTOs
+- API standardization: ApiErrorDto, ValidationErrorDto, paging Dto
 
 ### DTO Catalog with namespaces
 
-#### Common API DTOs
+#### Common API Dto
 - Namespace: SocialMotive.Core.Api.Contracts
   - ApiEnvelopeDto<T>
   - ApiErrorDto
@@ -137,33 +137,33 @@
   - SortDescriptorDto
   - FilterDescriptorDto
 
-#### Authentication DTOs
+#### Authentication Dto
 - Namespace: SocialMotive.Core.Api.Contracts.Identity
   - UserContextDto
   - ClaimDto
   - RoleDto
 
-#### Generator Canvas DTOs
+#### Generator Canvas Dto
 - Namespace: SocialMotive.Core.Generator.Contracts.Canvas
   - CanvasDocumentDto
   - CanvasSizeDto
   - CanvasMetadataDto
   - LayerOrderDto
 
-#### Generator Layer DTOs
+#### Generator Layer Dto
 - Namespace: SocialMotive.Core.Generator.Contracts.Layers
   - LayerDto
   - TextLayerDto
   - ImageLayerDto
 
-#### Generator Asset DTOs
+#### Generator Asset Dto
 - Namespace: SocialMotive.Core.Generator.Contracts.Assets
   - UploadAssetRequestDto
   - UploadAssetResponseDto
   - AssetDto
   - AssetListResponseDto
 
-#### Generator Template DTOs
+#### Generator Template Dto
 - Namespace: SocialMotive.Core.Generator.Contracts.Templates
   - CreateTemplateRequestDto
   - UpdateTemplateRequestDto
@@ -171,21 +171,21 @@
   - TemplateDetailDto
   - TemplateListResponseDto
 
-#### Generator Render DTOs
+#### Generator Render Dto
 - Namespace: SocialMotive.Core.Generator.Contracts.Rendering
   - RenderPngRequestDto
   - RenderPngResponseDto
   - ExportOptionsDto
   - RenderJobStatusDto
 
-#### Generator AI DTOs
+#### Generator AI Dto
 - Namespace: SocialMotive.Core.Generator.Contracts.Ai
   - GenerateImageRequestDto
   - GenerateImageResponseDto
   - AiGenerationOptionsDto
   - AiProviderCapabilityDto
 
-#### Admin DTOs
+#### Admin Dto
 - Namespace: SocialMotive.Core.Admin.Contracts
   - TableDescriptorDto
   - ColumnDescriptorDto
@@ -221,7 +221,7 @@
 - May add new table: `AuditLogs` (optional, for system-wide audit trail).
 
 ### SocialMotive.Web Admin entity mapping
-- Admin feature consumes **all tables** from both SocialMotive + TrekkerGenerator databases via whitelist CRUD grids.
+- Admin feature consumes **all tables** from both SocialMotive + AssetGenerator databases via whitelist CRUD grids.
 - May add or use existing: `AuditLogs` to track admin mutations (who changed what, when).
 - No separate domain tables; Admin is a "super-user data management interface".
 
@@ -231,10 +231,10 @@
 ### User model (local database only)
 - **Existing `Users` table** in SocialMotive stores all user data:
   - FirstName, LastName, Email, PasswordHash, ProfileImage, Bio, etc.
-  - Roles assigned via UserRoles table (Volunteer, Organizer, Admin, AdminFull)
+  - Roles assigned via UserRoles table (Volunteer, Organizer, Admin)
   - No external subject ID mapping needed; users authenticate via local account
 
-### DTOs for Frontend (volunteers)
+### Dto for Frontend (volunteers)
 - Namespace: SocialMotive.Core.Web.Contracts
   - EventDto (summary + details)
   - EventParticipantDto (registration status/hours/review)
@@ -243,9 +243,9 @@
   - GroupDto, LabelDto (categorization)
   - EventListResponseDto (paged events)
 
-### DTOs for Admin (CRUD grids)
+### Dto for Admin (CRUD grids)
 - Namespace: SocialMotive.Core.Admin.Contracts
-  - (Reuse existing entity DTOs from Core libraries)
+  - (Reuse existing entity Dto from Core libraries)
   - GridDataRequestDto (filtering, sorting, paging)
   - GridDataResponseDto<T> (paged result)
   - TableMetadataDto (column info, type, constraints)
@@ -253,11 +253,11 @@
 
 ## Platform Context
 - SocialMotive: online social platform for volunteers + event organizers
-- MVP: event matching + registration + TrekkerGenerator promo tool
+- MVP: event matching + registration + AssetGenerator promo tool
 - Database: existing volunteer tracking + events system being extended
 
 ## Databases
-- Generator DB: trekkergenerator
+- Generator DB: assetgenerator
 - Admin + Frontend DB: socialmotive
 
 ### Naming convention
@@ -265,12 +265,12 @@
 
 ## Existing SocialMotive DB Script
 - Existing script provided for SocialMotive is the style baseline.
-- Keep legacy-compatible SQL style for TrekkerGenerator DB script as requested.
+- Keep legacy-compatible SQL style for AssetGenerator DB script as requested.
 
 ## SQL Script Requirement
 - Create file required: Sql/create.sql
 - Target: MS SQL Server
-- TrekkerGenerator tables in v1:
+- AssetGenerator tables in v1:
   - Users
   - Templates
   - Assets
@@ -285,7 +285,7 @@
 - No external SSO configuration required
 
 ## Admin Requirements
-- In SocialMotive.Web: pages for all DB tables (both socialmotive + trekkergenerator)
+- In SocialMotive.Web: pages for all DB tables (both socialmotive + assetgenerator)
 - UI: Telerik editable grids
 - Required actions: Read, Create, Update, Delete, Export (CSV/Excel)
 
@@ -333,7 +333,7 @@
 - Capacity forecasting
 - Event budgeting + cost tracking
 
-### TrekkerGenerator v2+
+### AssetGenerator v2+
 - AI image generation (integrate OpenAI/Stability/etc)
 - Advanced layer animations
 - Brand kit management (logos, colors, fonts per organizer)
@@ -357,7 +357,7 @@
 
 ### Marketplace/Monetization
 - Skill marketplace (freelance gigs within platform)
-- Monetized template store (TrekkerGenerator designs)
+- Monetized template store (AssetGenerator designs)
 - In-app payments (event fees, donations)
 - Organizer premium tiers
 
@@ -365,7 +365,7 @@
 - Native iOS/Android apps
 - Offline event browsing
 - Push notifications
-- Mobile-optimized TrekkerGenerator
+- Mobile-optimized AssetGenerator
 
 ### Integrations
 - Calendar sync (Google Cal, Outlook)

@@ -1,0 +1,61 @@
+@page "/admin/organization-users"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using AdminOrganizationUser = SocialMotive.Core.Model.Admin.OrganizationUser
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Organization Users</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Organization Users</h1>
+        <p class="text-muted">Manage organization user assignments</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 OnDelete="@OnDelete"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <a href="/admin/organization-user/0" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary">
+                New Organization User
+            </a>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(AdminOrganizationUser.OrganizationUserId)" Title="ID" Width="80px" />
+            <GridColumn Field="@nameof(AdminOrganizationUser.UserId)" Title="User ID" Width="120px" />
+            <GridColumn Field="@nameof(AdminOrganizationUser.OrganizationRoleId)" Title="Role ID" Width="120px" />
+            <GridColumn Field="@nameof(AdminOrganizationUser.AssignedBy)" Title="Assigned By" Width="120px" />
+            <GridColumn Field="@nameof(AdminOrganizationUser.AssingedAt)" Title="Assigned At" DisplayFormat="{0:d}" Width="140px" />
+            <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
+                <Template Context="rowItem">
+                    @{ var item = (AdminOrganizationUser)rowItem; }
+                    <a href="@($"/admin/organization-user/{item.OrganizationUserId}")" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Edit</a>
+                </Template>
+            </GridColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<AdminOrganizationUser> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetOrganizationUsersAsync();
+    }
+
+    private async Task OnDelete(GridCommandEventArgs args)
+    {
+        var item = (AdminOrganizationUser)args.Item;
+        await Api.DeleteOrganizationUserAsync(item.OrganizationUserId);
+        _items = await Api.GetOrganizationUsersAsync();
+    }
+}

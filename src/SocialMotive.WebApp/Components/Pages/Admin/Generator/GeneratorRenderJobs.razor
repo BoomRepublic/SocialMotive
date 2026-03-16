@@ -1,0 +1,39 @@
+@page "/admin/generator/renderjobs"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Render Jobs</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary">New Render Job</button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Template</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th>Completed</th>
+                    <th>Error</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Render job rows will be populated here -->
+                <tr>
+                    <td colspan="7" class="text-center text-muted">Loading render jobs...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    // Component logic will be added here
+}

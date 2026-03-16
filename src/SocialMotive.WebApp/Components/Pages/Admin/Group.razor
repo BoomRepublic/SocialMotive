@@ -1,0 +1,115 @@
+@page "/admin/group/{GroupId:int}"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using AdminGroup = SocialMotive.Core.Model.Admin.Group
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+@inject NavigationManager Navigation
+
+<PageTitle>Admin - @PageMode Group</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>@PageMode Group</h1>
+        <p class="text-muted">@(IsCreateMode ? "Create a new group" : $"Group ID: {GroupId}")</p>
+    </div>
+
+    @if (_item == null)
+    {
+        <TelerikLoaderContainer Visible="true" Text="Loading group..." />
+    }
+    else
+    {
+        <TelerikForm Model="@_item"
+                     OnValidSubmit="@HandleValidSubmit"
+                     ValidationMessageType="@FormValidationMessageType.Tooltip">
+            <FormItems>
+                <FormItem ColSpan="2">
+                    <Template>
+                        <div class="field-grid">
+                            <label class="field-label">Name</label>
+                            <TelerikTextBox @bind-Value="@_item.Name" />
+
+                            <label class="field-label">Description</label>
+                            <TelerikTextBox @bind-Value="@_item.Description" />
+
+                            <label class="field-label">Color Hex</label>
+                            <TelerikColorPicker @bind-Value="@_item.ColorHex" />
+
+                            <label class="field-label">BG Color Hex</label>
+                            <TelerikColorPicker @bind-Value="@_item.BgColorHex" />
+
+                            <label class="field-label">Icon Type</label>
+                            <TelerikTextBox @bind-Value="@_item.IconType" />
+
+                            <label class="field-label">Level</label>
+                            <TelerikNumericTextBox @bind-Value="@_item.Level" />
+
+                            <label class="field-label">Published</label>
+                            <TelerikCheckBox @bind-Value="@_item.Publish" />
+                        </div>
+                    </Template>
+                </FormItem>
+            </FormItems>
+            <FormButtons>
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/groups"))">Cancel</TelerikButton>
+            </FormButtons>
+        </TelerikForm>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int GroupId { get; set; }
+
+    private AdminGroup? _item;
+    private string? _errorMessage;
+    private bool IsCreateMode => GroupId == 0;
+    private string PageMode => IsCreateMode ? "Create" : "Edit";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsCreateMode)
+        {
+            _item = new AdminGroup();
+            return;
+        }
+
+        _item = await Api.GetGroupAsync(GroupId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_item == null) return;
+
+        AdminGroup? result;
+        if (IsCreateMode)
+            result = await Api.CreateGroupAsync(_item);
+        else
+            result = await Api.UpdateGroupAsync(GroupId, _item);
+
+        if (result != null)
+            Navigation.NavigateTo("/admin/groups");
+        else
+            _errorMessage = "Failed to save group. Please try again.";
+    }
+}
+
+<style>
+    .field-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 0.75rem 1rem;
+        align-items: center;
+    }
+
+    .field-label {
+        font-weight: 600;
+    }
+</style>

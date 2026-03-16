@@ -1,0 +1,189 @@
+@page "/admin/user/{UserId:int}"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@attribute [Authorize(Roles = "Admin")]
+@using _User = SocialMotive.Core.Model.Admin.User
+@using AdminCity = SocialMotive.Core.Model.Admin.City
+@inject AdminApiService Api
+@inject NavigationManager Navigation
+
+<PageTitle>Admin - @PageMode User</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>@PageMode User</h1>
+        <p class="text-muted">@(IsCreateMode ? "Create a new user" : $"User ID: {UserId}")</p>
+    </div>
+
+    @if (_item == null)
+    {
+        <TelerikLoaderContainer Visible="true" Text="Loading user..." />
+    }
+    else
+    {
+        <TelerikTabStrip>
+            <TabStripTab Title="Details">
+                <TelerikForm Model="@_item"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormItems>
+                        <FormItem ColSpan="2">
+                            <Template>
+                                <div class="field-grid">
+                                    <label class="field-label">Username</label>
+                                    <TelerikTextBox @bind-Value="@_item.Username" />
+
+                                    <label class="field-label">First Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.FirstName" />
+
+                                    <label class="field-label">Middle Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.MiddleName" />
+
+                                    <label class="field-label">Last Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.LastName" />
+
+                                    <label class="field-label">Email</label>
+                                    <TelerikTextBox @bind-Value="@_item.Email" />
+
+                                    <label class="field-label">City</label>
+                                    <TelerikDropDownList Data="@_cities"
+                                                         TextField="@nameof(AdminCity.Name)"
+                                                         ValueField="@nameof(AdminCity.CityId)"
+                                                         @bind-Value="@_item.CityId"
+                                                         TValue="int?"
+                                                         TItem="AdminCity"
+                                                         DefaultText="Select city..." />
+
+                                    <label class="field-label">Mobile Phone</label>
+                                    <TelerikTextBox @bind-Value="@_item.MobilePhone" />
+
+                                    <label class="field-label">Bio</label>
+                                    <TelerikTextArea @bind-Value="@_item.Bio" Rows="4" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                        <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/users"))">Cancel</TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+                }
+            </TabStripTab>
+
+            @if (!IsCreateMode)
+            {
+                <TabStripTab Title="Social Accounts">
+                    <TelerikGrid Data="@_socialAccounts"
+                                 EditMode="@GridEditMode.Popup"
+                                 OnCreate="@HandleSocialAccountCreate"
+                                 OnUpdate="@HandleSocialAccountUpdate"
+                                 OnDelete="@HandleSocialAccountDelete">
+                        <GridToolBarTemplate>
+                            <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Social Account</GridCommandButton>
+                        </GridToolBarTemplate>
+                        <GridColumns>
+                            <GridColumn Field="@nameof(UserSocialAccount.Platform)" Title="Platform" Width="120px" />
+                            <GridColumn Field="@nameof(UserSocialAccount.UserName)" Title="Username" />
+                            <GridColumn Field="@nameof(UserSocialAccount.Url)" Title="URL" />
+                            <GridColumn Field="@nameof(UserSocialAccount.Verified)" Title="Verified" Width="100px" />
+                            <GridColumn Field="@nameof(UserSocialAccount.Created)" Title="Created" Width="160px" DisplayFormat="{0:yyyy-MM-dd}" Editable="false" />
+                            <GridCommandColumn Width="160px">
+                                <GridCommandButton Command="Edit" Icon="@SvgIcon.Pencil">Edit</GridCommandButton>
+                                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error">Delete</GridCommandButton>
+                                <GridCommandButton Command="Save" ShowInEdit="true" Icon="@SvgIcon.Save">Save</GridCommandButton>
+                                <GridCommandButton Command="Cancel" ShowInEdit="true" Icon="@SvgIcon.Cancel">Cancel</GridCommandButton>
+                            </GridCommandColumn>
+                        </GridColumns>
+                    </TelerikGrid>
+                </TabStripTab>
+            }
+        </TelerikTabStrip>
+    }
+</div>
+
+@code {
+    [Parameter] public int UserId { get; set; }
+
+    private _User? _item;
+    private List<AdminCity> _cities = new();
+    private List<UserSocialAccount> _socialAccounts = new();
+    private string? _errorMessage;
+    private bool IsCreateMode => UserId == 0;
+    private string PageMode => IsCreateMode ? "Create" : "Edit";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cities = (await Api.GetCitiesAsync())
+            .OrderBy(c => c.Name)
+            .ToList();
+
+        if (IsCreateMode)
+        {
+            _item = new _User();
+            return;
+        }
+
+        _item = await Api.GetUserAsync(UserId);
+        _socialAccounts = await Api.GetUserSocialAccountsByUserAsync(UserId);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_item == null) return;
+
+        _User? result;
+
+        if (IsCreateMode)
+            result = await Api.CreateUserAsync(_item);
+        else
+            result = await Api.UpdateUserAsync(UserId, _item);
+
+        if (result != null)
+            Navigation.NavigateTo("/admin/users");
+        else
+            _errorMessage = "Failed to save user. Please try again.";
+    }
+
+    private async Task HandleSocialAccountCreate(GridCommandEventArgs args)
+    {
+        var account = (UserSocialAccount)args.Item;
+        account.UserId = UserId;
+        var created = await Api.CreateUserSocialAccountAsync(account);
+        if (created != null)
+            _socialAccounts = await Api.GetUserSocialAccountsByUserAsync(UserId);
+    }
+
+    private async Task HandleSocialAccountUpdate(GridCommandEventArgs args)
+    {
+        var account = (UserSocialAccount)args.Item;
+        var updated = await Api.UpdateUserSocialAccountAsync(account.UserSocialAccountId, account);
+        if (updated != null)
+            _socialAccounts = await Api.GetUserSocialAccountsByUserAsync(UserId);
+    }
+
+    private async Task HandleSocialAccountDelete(GridCommandEventArgs args)
+    {
+        var account = (UserSocialAccount)args.Item;
+        await Api.DeleteUserSocialAccountAsync(account.UserSocialAccountId);
+        _socialAccounts = await Api.GetUserSocialAccountsByUserAsync(UserId);
+    }
+}
+
+<style>
+    .field-grid {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 0.75rem 1rem;
+        align-items: center;
+    }
+
+    .field-label {
+        font-weight: 600;
+    }
+</style>

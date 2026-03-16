@@ -1,0 +1,53 @@
+@page "/admin/event-tasks"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using AdminCity = SocialMotive.Core.Model.Admin.City
+@using AdminEventTask = SocialMotive.Core.Model.Admin.EventTask
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Event Tasks</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Event Tasks</h1>
+        <p class="text-muted">Manage tasks within events</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 EditMode="@GridEditMode.Popup"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <GridCommandButton Command="Add" Icon="@SvgIcon.Plus" Enabled="false">New Task</GridCommandButton>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(AdminEventTask.EventTaskId)" Title="ID" Width="80px" Editable="false" />
+            <GridColumn Field="@nameof(AdminEventTask.EventId)" Title="Event ID" Width="100px" />
+            <GridColumn Field="@nameof(AdminEventTask.Name)" Title="Name" />
+            <GridColumn Field="@nameof(AdminEventTask.Difficulty)" Title="Difficulty" Width="110px" />
+            <GridColumn Field="@nameof(AdminEventTask.Required)" Title="Required" Width="100px" />
+            <GridColumn Field="@nameof(AdminEventTask.MaxParticipants)" Title="Max" Width="80px" />
+            <GridColumn Field="@nameof(AdminEventTask.HoursEstimate)" Title="Hours Est." Width="110px" />
+            <GridColumn Field="@nameof(AdminEventTask.OrderIndex)" Title="Order" Width="80px" />
+            <GridCommandColumn Width="100px">
+                <GridCommandButton Command="Edit" Icon="@SvgIcon.Pencil" Enabled="false">Edit</GridCommandButton>
+            </GridCommandColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" Enabled="false" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<AdminEventTask> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetEventTasksAsync();
+    }
+}

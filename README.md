@@ -22,7 +22,7 @@
 - **Runtime**: .NET 10.0 ASP.NET Core
 - **UI Framework**: Blazor Web App (Auto/Interactive rendering)
 - **UI Components**: Telerik UI for Blazor
-- **Database**: Microsoft SQL Server (two databases: `socialmotive`, `trekkergenerator`)
+- **Database**: Microsoft SQL Server (two databases: `socialmotive`, `assetgenerator`)
 - **Authorization**: Claims-based role access control
 - **ORM**: Entity Framework Core
 - **Testing**: xUnit, Moq
@@ -37,7 +37,7 @@ SocialMotive/
 │   ├── functional-design.md/.html     # Detailed feature specifications
 │   ├── technical-design.md            # Architecture & infrastructure
 │   ├── roadmap.md                     # v1.0 → v4.0+ product roadmap
-│   └── plan-socialMotiveTrekkerGenerator.prompt.md
+│   └── plan-socialMotiveAssetGenerator.prompt.md
 │
 ├── SQL/                               # Database scripts
 │   └── socialmotive-create-v1.sql     # Schema & initial data
@@ -132,19 +132,19 @@ All planning and design documentation is in the `planning/` folder:
 - **[Functional Design](planning/functional-design.md)** - Feature specs, workflows, API endpoints, business rules
 - **[Technical Design](planning/technical-design.md)** - Architecture, project structure, database schema, deployment
 - **[Product Roadmap](planning/roadmap.md)** - v1.0 → v4.0+, timeline, resource allocation, success metrics
-- **[DTO Catalog](planning/plan-socialMotiveTrekkerGenerator.prompt.md)** - Complete DTO specifications with namespaces
+- **[DTO Catalog](planning/plan-socialMotiveAssetGenerator.prompt.md)** - Complete DTO specifications with namespaces
 
 ## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    SocialMotive.Core                        │
-│         (Shared DTOs, Contracts, Helpers)                  │
+│         (Shared Dto, Contracts, Helpers)                  │
 └─────────────────────────────────────────────────────────────┘
     ▲              ▲              ▲
     │              │              │
 ┌───┴──────┐  ┌────┴─────┐  ┌────┴──────┐
-│ Frontend │  │ Trekker  │  │   Admin   │
+│ Frontend │  │  Asset   │  │   Admin   │
 │   Web    │  │Generator │  │  Backend  │
 │  (Portal)│  │  (Canvas)│  │   (CRUD)  │
 └──────────┘  └──────────┘  └───────────┘

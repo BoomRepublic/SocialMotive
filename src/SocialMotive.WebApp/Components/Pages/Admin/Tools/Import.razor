@@ -1,0 +1,457 @@
+@page "/admin/tools/import"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Text.Json
+@using System.Globalization
+@using SocialMotive.Core.Model.Admin
+@attribute [Authorize(Roles = "Admin")]
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Admin - Import Data</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Import Data</h1>
+        <p class="text-muted">Import JSON or CSV data into database tables</p>
+    </div>
+
+    <div class="import-form">
+        <div class="form-group mb-3">
+            <label for="tableSelect" class="form-label">Select Table</label>
+            <TelerikDropDownList Data="@Tables"
+                                 @bind-Value="@SelectedTable"
+                                 DefaultText="Select a table..."
+                                 Width="100%"
+                                 Id="tableSelect">
+            </TelerikDropDownList>
+        </div>
+
+        <TelerikTabStrip @bind-ActiveTabIndex="@ActiveTabIndex">
+            <TabStripTab Title="JSON">
+                <div class="form-group mb-3 mt-3">
+                    <label for="jsonInput" class="form-label">JSON Data</label>
+                    <TelerikTextArea @bind-Value="@JsonInput"
+                                     Id="jsonInput"
+                                     Rows="20"
+                                     Width="100%"
+                                     Placeholder="Paste your JSON array here...">
+                    </TelerikTextArea>
+                    <small class="text-muted">
+                        Enter a JSON array where each object represents a row. Property names should match column names.
+                        <br />
+                        Example: <code>[{"Name": "Value1", "Description": "Desc1"}, {"Name": "Value2", "Description": "Desc2"}]</code>
+                    </small>
+                </div>
+            </TabStripTab>
+            <TabStripTab Title="CSV Upload">
+                <div class="form-group mb-3 mt-3">
+                    <label class="form-label">Upload CSV File</label>
+                    <TelerikFileSelect AllowedExtensions="@AllowedCsvExtensions"
+                                       MaxFileSize="@(10 * 1024 * 1024)"
+                                       Multiple="false"
+                                       OnSelect="@OnCsvFileSelected"
+                                       OnRemove="@OnCsvFileRemoved">
+                    </TelerikFileSelect>
+                    <small class="text-muted">
+                        Upload a CSV file (max 10 MB). The first row must contain column headers matching the table's property names.
+                        Values are separated by commas. Text with commas should be enclosed in double quotes.
+                    </small>
+                </div>
+
+                @if (!string.IsNullOrEmpty(CsvPreview))
+                {
+                    <div class="form-group mb-3">
+                        <label class="form-label">Preview (first 5 rows as JSON)</label>
+                        <TelerikTextArea Value="@CsvPreview"
+                                         Rows="10"
+                                         Width="100%"
+                                         ReadOnly="true">
+                        </TelerikTextArea>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(CsvFileName))
+                {
+                    <div class="csv-info mb-3">
+                        <span class="badge bg-info me-2">File: @CsvFileName</span>
+                        <span class="badge bg-secondary">Rows: @CsvRowCount</span>
+                    </div>
+                }
+            </TabStripTab>
+        </TelerikTabStrip>
+
+        <div class="form-actions mb-3">
+            <TelerikButton ButtonType="ButtonType.Button"
+                           ThemeColor="@ThemeConstants.Button.ThemeColor.Primary"
+                           OnClick="@ImportData"
+                           Enabled="@CanImport"
+                           Icon="@FontIcon.Upload">
+                Import
+            </TelerikButton>
+            <TelerikButton ButtonType="ButtonType.Button"
+                           ThemeColor="@ThemeConstants.Button.ThemeColor.Base"
+                           OnClick="@ClearForm">
+                Clear
+            </TelerikButton>
+        </div>
+
+        @if (!string.IsNullOrEmpty(StatusMessage))
+        {
+            <div class="alert @StatusAlertClass" role="alert">
+                @StatusMessage
+            </div>
+        }
+
+        @if (ImportResults.Any())
+        {
+            <div class="import-results mt-4">
+                <h4>Import Results</h4>
+                <div class="results-summary mb-2">
+                    <span class="badge bg-success me-2">Success: @ImportResults.Count(r => r.Success)</span>
+                    <span class="badge bg-danger">Failed: @ImportResults.Count(r => !r.Success)</span>
+                </div>
+                <TelerikGrid Data="@ImportResults"
+                             Pageable="true"
+                             PageSize="10"
+                             Sortable="true">
+                    <GridColumns>
+                        <GridColumn Field="@nameof(ImportResult.RowIndex)" Title="Row" Width="80px" />
+                        <GridColumn Field="@nameof(ImportResult.Success)" Title="Status" Width="100px">
+                            <Template>
+                                @{
+                                    var result = (ImportResult)context;
+                                    <span class="badge @(result.Success ? "bg-success" : "bg-danger")">
+                                        @(result.Success ? "Success" : "Failed")
+                                    </span>
+                                }
+                            </Template>
+                        </GridColumn>
+                        <GridColumn Field="@nameof(ImportResult.Message)" Title="Message" />
+                    </GridColumns>
+                </TelerikGrid>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .admin-container {
+        padding: 2rem;
+        max-width: 1200px;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        margin-bottom: 0.5rem;
+    }
+
+    .import-form {
+        background: var(--bs-body-bg);
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--bs-border-color);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .import-results {
+        border-top: 1px solid var(--bs-border-color);
+        padding-top: 1rem;
+    }
+</style>
+
+@code {
+    private string SelectedTable { get; set; } = string.Empty;
+    private string JsonInput { get; set; } = string.Empty;
+    private string StatusMessage { get; set; } = string.Empty;
+    private bool IsSuccess { get; set; }
+    private bool IsLoading { get; set; }
+    private List<ImportResult> ImportResults { get; set; } = new();
+    private int ActiveTabIndex { get; set; } = 0;
+
+    // CSV-related state
+    private string CsvJsonData { get; set; } = string.Empty;
+    private string CsvPreview { get; set; } = string.Empty;
+    private string CsvFileName { get; set; } = string.Empty;
+    private int CsvRowCount { get; set; }
+    private List<string> AllowedCsvExtensions { get; set; } = new() { ".csv" };
+
+    private bool CanImport
+    {
+        get
+        {
+            if (IsLoading || string.IsNullOrWhiteSpace(SelectedTable)) return false;
+            if (ActiveTabIndex == 0) return !string.IsNullOrWhiteSpace(JsonInput);
+            if (ActiveTabIndex == 1) return !string.IsNullOrWhiteSpace(CsvJsonData);
+            return false;
+        }
+    }
+
+    private string StatusAlertClass => IsSuccess ? "alert-success" : "alert-danger";
+
+    private List<string> Tables { get; set; } = new()
+    {
+        "Assets",
+        "Cities",
+        "EventParticipants",
+        "Events",
+        "EventTaskAssignments",
+        "EventTasks",
+        "EventTypes",
+        "Groups",
+        "Invites",
+        "Labels",
+        "Layers",
+        "Locations",
+        "RenderJobs",
+        "Settings",
+        "Templates",
+        "TrackerLabels",
+        "TrackerRoles",
+        "Trackers",
+        "UserAccounts",
+        "Users"
+    };
+
+    private async Task OnCsvFileSelected(FileSelectEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        if (file == null) return;
+
+        try
+        {
+            CsvFileName = file.Name;
+
+            using var stream = file.Stream;
+            using var reader = new StreamReader(stream);
+            var csvContent = await reader.ReadToEndAsync();
+
+            var jsonArray = ConvertCsvToJson(csvContent);
+            CsvJsonData = JsonSerializer.Serialize(jsonArray, new JsonSerializerOptions { WriteIndented = true });
+            CsvRowCount = jsonArray.Count;
+
+            // Preview first 5 rows
+            var previewItems = jsonArray.Take(5).ToList();
+            CsvPreview = JsonSerializer.Serialize(previewItems, new JsonSerializerOptions { WriteIndented = true });
+
+            StatusMessage = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            IsSuccess = false;
+            StatusMessage = $"Error reading CSV file: {ex.Message}";
+            CsvJsonData = string.Empty;
+            CsvPreview = string.Empty;
+            CsvRowCount = 0;
+        }
+    }
+
+    private void OnCsvFileRemoved(FileSelectEventArgs args)
+    {
+        CsvJsonData = string.Empty;
+        CsvPreview = string.Empty;
+        CsvFileName = string.Empty;
+        CsvRowCount = 0;
+    }
+
+    private List<Dictionary<string, object?>> ConvertCsvToJson(string csvContent)
+    {
+        var result = new List<Dictionary<string, object?>>();
+        var lines = ParseCsvLines(csvContent);
+
+        if (lines.Count < 2)
+            throw new InvalidOperationException("CSV must contain a header row and at least one data row.");
+
+        var headers = ParseCsvRow(lines[0]);
+
+        for (int i = 1; i < lines.Count; i++)
+        {
+            var values = ParseCsvRow(lines[i]);
+            if (values.Count == 0 || values.All(string.IsNullOrWhiteSpace))
+                continue;
+
+            var row = new Dictionary<string, object?>();
+            for (int j = 0; j < headers.Count; j++)
+            {
+                var header = headers[j].Trim();
+                var value = j < values.Count ? values[j].Trim() : string.Empty;
+                row[header] = ParseCsvValue(value);
+            }
+            result.Add(row);
+        }
+
+        return result;
+    }
+
+    private List<string> ParseCsvLines(string content)
+    {
+        var lines = new List<string>();
+        var currentLine = new System.Text.StringBuilder();
+        bool inQuotes = false;
+
+        foreach (var ch in content)
+        {
+            if (ch == '"')
+            {
+                inQuotes = !inQuotes;
+                currentLine.Append(ch);
+            }
+            else if (ch == '\n' && !inQuotes)
+            {
+                var line = currentLine.ToString().TrimEnd('\r');
+                if (!string.IsNullOrWhiteSpace(line))
+                    lines.Add(line);
+                currentLine.Clear();
+            }
+            else
+            {
+                currentLine.Append(ch);
+            }
+        }
+
+        var lastLine = currentLine.ToString().TrimEnd('\r');
+        if (!string.IsNullOrWhiteSpace(lastLine))
+            lines.Add(lastLine);
+
+        return lines;
+    }
+
+    private List<string> ParseCsvRow(string line)
+    {
+        var fields = new List<string>();
+        var current = new System.Text.StringBuilder();
+        bool inQuotes = false;
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            var ch = line[i];
+
+            if (inQuotes)
+            {
+                if (ch == '"')
+                {
+                    if (i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        current.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = false;
+                    }
+                }
+                else
+                {
+                    current.Append(ch);
+                }
+            }
+            else
+            {
+                if (ch == '"')
+                {
+                    inQuotes = true;
+                }
+                else if (ch == ',')
+                {
+                    fields.Add(current.ToString());
+                    current.Clear();
+                }
+                else
+                {
+                    current.Append(ch);
+                }
+            }
+        }
+
+        fields.Add(current.ToString());
+        return fields;
+    }
+
+    private object? ParseCsvValue(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return null;
+
+        if (bool.TryParse(value, out var boolVal)) return boolVal;
+        if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal)) return intVal;
+        if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var decVal)) return decVal;
+        if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateVal)) return dateVal;
+
+        return value;
+    }
+
+    private async Task ImportData()
+    {
+        if (!CanImport) return;
+
+        IsLoading = true;
+        StatusMessage = string.Empty;
+        ImportResults.Clear();
+
+        try
+        {
+            var jsonData = ActiveTabIndex == 0 ? JsonInput : CsvJsonData;
+
+            // Validate JSON
+            JsonDocument.Parse(jsonData);
+
+            var request = new ImportRequest
+            {
+                TableName = SelectedTable,
+                JsonData = jsonData
+            };
+
+            var response = await Http.PostAsJsonAsync("/api/admin/import", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ImportResponse>();
+                if (result != null)
+                {
+                    IsSuccess = result.Success;
+                    StatusMessage = result.Message;
+                    ImportResults = result.Results;
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                IsSuccess = false;
+                StatusMessage = $"Import failed: {errorContent}";
+            }
+        }
+        catch (JsonException ex)
+        {
+            IsSuccess = false;
+            StatusMessage = $"Invalid JSON format: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            IsSuccess = false;
+            StatusMessage = $"Error during import: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void ClearForm()
+    {
+        SelectedTable = string.Empty;
+        JsonInput = string.Empty;
+        CsvJsonData = string.Empty;
+        CsvPreview = string.Empty;
+        CsvFileName = string.Empty;
+        CsvRowCount = 0;
+        StatusMessage = string.Empty;
+        ImportResults.Clear();
+    }
+}

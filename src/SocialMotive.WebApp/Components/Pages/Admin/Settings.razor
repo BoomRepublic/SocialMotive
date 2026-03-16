@@ -1,0 +1,59 @@
+@page "/admin/settings"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Settings</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Settings</h1>
+        <p class="text-muted">Manage application settings</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 OnDelete="@OnDelete"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <a href="/admin/setting/0" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary">
+                New Setting
+            </a>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(global::SocialMotive.Core.Model.Admin.Setting.SettingId)" Title="ID" Width="80px" />
+            <GridColumn Field="@nameof(global::SocialMotive.Core.Model.Admin.Setting.SettingKey)" Title="Key" />
+            <GridColumn Field="@nameof(global::SocialMotive.Core.Model.Admin.Setting.SettingValue)" Title="Value" />
+            <GridColumn Field="@nameof(global::SocialMotive.Core.Model.Admin.Setting.Scope)" Title="Scope" Width="140px" />
+            <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
+                <Template Context="rowItem">
+                    @{ var item = (global::SocialMotive.Core.Model.Admin.Setting)rowItem; }
+                    <a href="@($"/admin/setting/{item.SettingId}")" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">Edit</a>
+                </Template>
+            </GridColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<global::SocialMotive.Core.Model.Admin.Setting> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetSettingsAsync();
+    }
+
+    private async Task OnDelete(GridCommandEventArgs args)
+    {
+        var item = (global::SocialMotive.Core.Model.Admin.Setting)args.Item;
+        await Api.DeleteSettingAsync(item.SettingId);
+        _items = await Api.GetSettingsAsync();
+    }
+}

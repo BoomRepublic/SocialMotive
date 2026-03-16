@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet run:*)",
+      "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 5078 | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_-Force }\")",
+      "Bash(powershell -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 5078\\).OwningProcess -Force\")",
+      "Bash(sed -i 's/nameof\\(Invite\\\\./nameof\\(AdminInvite./g; s/\\(Invite\\)rowItem/\\(AdminInvite\\)rowItem/g; s/List<Invite>/List<AdminInvite>/g; s/\\(Invite\\)args\\\\.Item/\\(AdminInvite\\)args.Item/g' src/SocialMotive.WebApp/Components/Pages/Admin/Invites.razor)",
+      "Bash(sed -i 's/nameof\\(Setting\\\\./nameof\\(AdminSetting./g; s/\\(Setting\\)rowItem/\\(AdminSetting\\)rowItem/g; s/List<Setting>/List<AdminSetting>/g; s/\\(Setting\\)args\\\\.Item/\\(AdminSetting\\)args.Item/g' src/SocialMotive.WebApp/Components/Pages/Admin/Settings.razor)",
+      "Bash(powershell -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 5078 -ErrorAction SilentlyContinue\\).OwningProcess -Force -ErrorAction SilentlyContinue\")"
+    ]
+  }
+}

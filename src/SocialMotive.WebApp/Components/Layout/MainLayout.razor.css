@@ -1,0 +1,144 @@
+/* Drawer item styling - remove rounded corners */
+::deep .k-drawer-item,
+::deep .k-drawer-item.k-selected,
+::deep .k-drawer-item:hover,
+::deep .k-drawer-item:focus {
+    border-radius: 0;
+}
+
+::deep .drawer-item-wrapper {
+    width: 100%;
+}
+
+::deep .drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-weight: 500;
+}
+
+::deep .drawer-item-text {
+    flex: 1;
+}
+
+/* Children and grandchildren styling */
+::deep .drawer-children {
+    padding-left: 8px;
+}
+
+::deep .drawer-child {
+    padding: 4px 0;
+}
+
+::deep .drawer-child-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.95em;
+}
+
+::deep .drawer-child-text:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+::deep .drawer-grandchildren {
+    padding-left: 12px;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    margin-left: 8px;
+}
+
+::deep .drawer-grandchild {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+::deep .drawer-grandchild:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding-left: 16px;
+}
+
+::deep .drawer-grandchild.active {
+    font-weight: 600;
+    color: #1976d2;
+}
+
+/* App bar and layout */
+::deep .appbar-top {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+::deep .appbar-bottom {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#app-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 12px;
+}
+
+#app-title strong {
+    font-size: 1.1em;
+}
+
+#app-title sup {
+    font-size: 0.7em;
+}
+
+#product-page-link {
+    color: inherit;
+    text-decoration: none;
+    padding: 8px 12px;
+    transition: background-color 0.2s ease;
+}
+
+#product-page-link:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+#copyright {
+    font-size: 0.85em;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+/* Main layout structure */
+::deep .mainlayout-drawer {
+    height: 100vh;
+}
+
+.main-content-wrapper {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.sidebar-layout {
+    flex-direction: row;
+}
+
+.sidebar {
+    width: 220px;
+    min-width: 220px;
+    overflow-y: auto;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.sidebar ::deep .k-menu-vertical {
+    width: 100%;
+}
+
+main {
+    flex: 1;
+    overflow: auto;
+}
