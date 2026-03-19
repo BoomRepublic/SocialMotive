@@ -340,8 +340,17 @@ UserSocialAccounts Created datetime NOT NULL (getdate())
 UserSocialAccounts Modified datetime NOT NULL (getdate())
 UserSocialAccounts UserId int NULL
 UserSocialAccounts ExternalId nvarchar(255) NULL
+VerificationCodes VerificationCodeId int NOT NULL IDENTITY
+VerificationCodes UserId int NULL
+VerificationCodes Code nvarchar(255) NOT NULL
+VerificationCodes CodeType nvarchar(50) NOT NULL
+VerificationCodes Target nvarchar(255) NULL
+VerificationCodes ExpiresAt datetime NOT NULL
+VerificationCodes IsUsed bit NOT NULL ((0))
+VerificationCodes UsedAt datetime NULL
+VerificationCodes CreatedAt datetime NOT NULL (getdate())
 
-(248 rows affected)
+(257 rows affected)
 
 ```
 
@@ -378,8 +387,9 @@ UserLabels 0
 UserRoles 33
 Users 33
 UserSocialAccounts 2
+VerificationCodes 0
 
-(29 rows affected)
+(30 rows affected)
 
 ```
 

@@ -38,6 +38,7 @@ namespace SocialMotive.Core.Data
         public DbSet<DbOrganization> Organizations { get; set; } = null!;
         public DbSet<DbOrganizationRole> OrganizationRoles { get; set; } = null!;
         public DbSet<DbOrganizationUser> OrganizationUsers { get; set; } = null!;
+        public DbSet<DbVerificationCode> VerificationCodes { get; set; } = null!;
 
         // Generator tables
         public DbSet<DbTemplate> Templates { get; set; } = null!;
@@ -125,6 +126,9 @@ namespace SocialMotive.Core.Data
 
             modelBuilder.Entity<DbOrganizationUser>()
                 .HasKey(ou => ou.OrganizationUserId);
+
+            modelBuilder.Entity<DbVerificationCode>()
+                .HasKey(vc => vc.VerificationCodeId);
 
             // Generator tables
             var templateConfig = modelBuilder.Entity<DbTemplate>();
@@ -366,6 +370,13 @@ namespace SocialMotive.Core.Data
                 .HasForeignKey(ou => ou.AssignedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // VerificationCode ← User
+            modelBuilder.Entity<DbVerificationCode>()
+                .HasOne(vc => vc.User)
+                .WithMany()
+                .HasForeignKey(vc => vc.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // Template ← User
             modelBuilder.Entity<DbTemplate>()
                 .HasOne(t => t.User)
@@ -435,6 +446,7 @@ namespace SocialMotive.Core.Data
             modelBuilder.Entity<DbOrganization>().ToTable("Organizations");
             modelBuilder.Entity<DbOrganizationRole>().ToTable("OrganizationRoles");
             modelBuilder.Entity<DbOrganizationUser>().ToTable("OrganizationUsers");
+            modelBuilder.Entity<DbVerificationCode>().ToTable("VerificationCodes");
 
             // ===== Column / Property Configurations =====
 
@@ -528,6 +540,33 @@ namespace SocialMotive.Core.Data
 
             modelBuilder.Entity<DbUserSocialAccount>()
                 .HasIndex(ua => ua.SocialPlatformId);
+
+            // VerificationCodes indexes
+            modelBuilder.Entity<DbVerificationCode>()
+                .Property(vc => vc.Code)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<DbVerificationCode>()
+                .Property(vc => vc.CodeType)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<DbVerificationCode>()
+                .Property(vc => vc.Target)
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<DbVerificationCode>()
+                .HasIndex(vc => vc.Code);
+
+            modelBuilder.Entity<DbVerificationCode>()
+                .HasIndex(vc => vc.UserId);
+
+            modelBuilder.Entity<DbVerificationCode>()
+                .HasIndex(vc => vc.CodeType);
+
+            modelBuilder.Entity<DbVerificationCode>()
+                .HasIndex(vc => vc.ExpiresAt);
         }
     }
 }
