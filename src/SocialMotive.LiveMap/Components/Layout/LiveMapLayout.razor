@@ -1,0 +1,17 @@
+@inherits LayoutComponentBase
+
+<TelerikRootComponent>
+    <div class="livemap-layout">
+        <nav class="livemap-nav">
+            <span class="livemap-brand">SocialMotive Live Map</span>
+            <div class="livemap-links">
+                <NavLink href="/" Match="NavLinkMatch.All">Leaflet / OSM</NavLink>
+                <NavLink href="/google">Google Maps</NavLink>
+                <NavLink href="/telerik">Telerik Map</NavLink>
+            </div>
+        </nav>
+        <main class="livemap-main">
+            @Body
+        </main>
+    </div>
+</TelerikRootComponent>

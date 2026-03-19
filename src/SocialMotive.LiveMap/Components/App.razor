@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>SocialMotive Live Map</title>
+
+    <!-- Telerik -->
+    <link rel="stylesheet" href="https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-main.css" />
+    <link rel="stylesheet" href="https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-font-icons/font-icons.css" />
+    <script src="https://blazor.cdn.telerik.com/blazor/13.0.0/telerik-blazor.min.js" defer></script>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Google Maps -->
+    <script id="google-maps-script"></script>
+
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="SocialMotive.LiveMap.styles.css" />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

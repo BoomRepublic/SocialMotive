@@ -45,6 +45,10 @@ try
     builder.Services.AddHttpClient("WebApi", client =>
         client.BaseAddress = new Uri(builder.Configuration["WebApiBaseUrl"] ?? "https://localhost:7050/"));
 
+    // HttpClient to call LiveMap's callback endpoint for real-time map updates
+    builder.Services.AddHttpClient("LiveMapApi", client =>
+        client.BaseAddress = new Uri(builder.Configuration["LiveMapBaseUrl"] ?? "https://localhost:7052/"));
+
     builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie();
     builder.Services.AddAuthorization();

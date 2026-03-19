@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SocialMotive.Core.Data;
+using SocialMotive.Core.Model.LiveMap;
 using SocialMotive.TelegramBot.Models;
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
@@ -782,6 +783,30 @@ public class TelegramUpdateHandler
 
         _logger.LogDebug("Stored location for tracker {TrackerId}: {Lat}, {Lon}",
             tracker.TrackerId, loc.Latitude, loc.Longitude);
+
+        // Notify LiveMap app of the new location (fire-and-forget)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var http = _httpClientFactory.CreateClient("LiveMapApi");
+                await http.PostAsJsonAsync("api/location-update", new TrackerLocation
+                {
+                    TrackerId = tracker.TrackerId,
+                    DisplayName = tracker.DisplayName,
+                    Latitude = (float)loc.Latitude,
+                    Longitude = (float)loc.Longitude,
+                    AccuracyMeters = (float?)loc.HorizontalAccuracy,
+                    SpeedKmh = null,
+                    HeadingDegrees = loc.Heading != null ? (float?)loc.Heading : null,
+                    Timestamp = now,
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to notify LiveMap of location update for tracker {TrackerId}", tracker.TrackerId);
+            }
+        });
     }
 
     #endregion
