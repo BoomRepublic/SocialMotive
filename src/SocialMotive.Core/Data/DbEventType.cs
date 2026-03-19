@@ -6,7 +6,8 @@ namespace SocialMotive.Core.Data
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string? Icon { get; set; }
-        public string? Color { get; set; }
+        public string? ColorHex { get; set; }
+        public string? BgColorHex { get; set; }
         public DateTime Created { get; set; }
 
         // Navigation properties

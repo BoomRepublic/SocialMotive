@@ -29,7 +29,7 @@
                 error = "User not found.";
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             error = "Error loading profile.";
         }
@@ -54,7 +54,9 @@
     else if (profile != null)
     {
         <div class="sm-profile-header">
-            <TelerikAvatar ImageUrl="@profile.AvatarUrl" Alt="@profile.DisplayName" Size="Large" />
+            <TelerikAvatar Type="@AvatarType.Image" Size="Large">
+                <img src="@profile.AvatarUrl" alt="@profile.DisplayName" />
+            </TelerikAvatar>
             <h2>@profile.DisplayName</h2>
             <span class="sm-profile-username">@("@" + profile.Username)</span>
         </div>

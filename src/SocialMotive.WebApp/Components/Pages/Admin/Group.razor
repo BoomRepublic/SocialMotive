@@ -21,47 +21,64 @@
     }
     else
     {
-        <TelerikForm Model="@_item"
-                     OnValidSubmit="@HandleValidSubmit"
-                     ValidationMessageType="@FormValidationMessageType.Tooltip">
-            <FormItems>
-                <FormItem ColSpan="2">
-                    <Template>
-                        <div class="field-grid">
-                            <label class="field-label">Name</label>
-                            <TelerikTextBox @bind-Value="@_item.Name" />
+        <TelerikTabStrip>
+            <TabStripTab Title="Edit">
+                <TelerikForm Model="@_item"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormItems>
+                        <FormItem ColSpan="2">
+                            <Template>
+                                <div class="field-grid">
+                                    <label class="field-label">Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.Name" />
 
-                            <label class="field-label">Description</label>
-                            <TelerikTextBox @bind-Value="@_item.Description" />
+                                    <label class="field-label">Description</label>
+                                    <TelerikTextBox @bind-Value="@_item.Description" />
 
-                            <label class="field-label">Color Hex</label>
-                            <TelerikColorPicker @bind-Value="@_item.ColorHex" />
+                                    <label class="field-label">Color Hex</label>
+                                    <TelerikColorPicker @bind-Value="@_item.ColorHex" />
 
-                            <label class="field-label">BG Color Hex</label>
-                            <TelerikColorPicker @bind-Value="@_item.BgColorHex" />
+                                    <label class="field-label">BG Color Hex</label>
+                                    <TelerikColorPicker @bind-Value="@_item.BgColorHex" />
 
-                            <label class="field-label">Icon Type</label>
-                            <TelerikTextBox @bind-Value="@_item.IconType" />
+                                    <label class="field-label">Icon Type</label>
+                                    <TelerikTextBox @bind-Value="@_item.IconType" />
 
-                            <label class="field-label">Level</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.Level" />
+                                    <label class="field-label">Level</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.Level" />
 
-                            <label class="field-label">Published</label>
-                            <TelerikCheckBox @bind-Value="@_item.Publish" />
-                        </div>
-                    </Template>
-                </FormItem>
-            </FormItems>
-            <FormButtons>
-                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
-                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/groups"))">Cancel</TelerikButton>
-            </FormButtons>
-        </TelerikForm>
+                                    <label class="field-label">Published</label>
+                                    <TelerikCheckBox @bind-Value="@_item.Publish" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                        <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/groups"))">Cancel</TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
 
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
-        }
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+                }
+            </TabStripTab>
+
+            @if (!IsCreateMode)
+            {
+                <TabStripTab Title="Details">
+                    <div class="field-grid">
+                        <label class="field-label">Created At</label>
+                        <span>@_item.CreatedAt.ToString("g")</span>
+
+                        <label class="field-label">Modified At</label>
+                        <span>@_item.ModifiedAt.ToString("g")</span>
+                    </div>
+                </TabStripTab>
+            }
+        </TelerikTabStrip>
     }
 </div>
 

@@ -1,5 +1,8 @@
+using Swashbuckle.AspNetCore.Annotations;
+
 namespace SocialMotive.Core.Model.Admin
 {
+    [SwaggerSchema("AdminImportResponse")]
     public class ImportResponse
     {
         public bool Success { get; set; }

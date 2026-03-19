@@ -1,17 +1,19 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for Invite management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminInvite")]
     public class Invite
     {
         public int InviteId { get; set; }
 
         public int? CreatedByTrackerId { get; set; }
 
-        public DateTime? CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; init; }
 
         [StringLength(200)]
         public string? Name { get; set; }

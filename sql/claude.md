@@ -85,7 +85,7 @@ sql/
 - Generator tables use explicit `ToTable(...)` mappings in the DbContext fluent API
 
 ## Schema Snapshot
-> **Last updated**: 2026-03-16
+> **Last updated**: 2025-07-15
 > **Refresh command**: `sqlcmd -S . -d SocialMotive -E -i sql\query-schema.sql -W`
 
 ### Tables & Columns
@@ -134,6 +134,11 @@ Events CreatedAt datetime NOT NULL (getdate())
 Events UpdatedAt datetime NOT NULL (getdate())
 Events PublishedAt datetime NULL
 Events OrganizerId int NULL
+EventSkills EventSkillId int NOT NULL
+EventSkills Name nvarchar(50) NULL
+EventSkills Difficulty int NULL
+EventSkills ColorHex nvarchar(50) NULL
+EventSkills BgColorHex nvarchar(50) NULL
 EventTaskAssignments EventTaskAssignmentId int NOT NULL IDENTITY
 EventTaskAssignments EventTaskId int NOT NULL
 EventTaskAssignments StartTime datetime NOT NULL
@@ -144,11 +149,13 @@ EventTaskAssignments Updated datetime NOT NULL (getdate())
 EventTaskAssignments UserId int NULL
 EventTasks EventTaskId int NOT NULL IDENTITY
 EventTasks EventId int NOT NULL
+EventTasks EventSkillId int NULL
 EventTasks Name nvarchar(255) NOT NULL
 EventTasks Description nvarchar(max) NULL
 EventTasks Difficulty int NOT NULL ((1))
 EventTasks Required bit NOT NULL ((1))
 EventTasks MaxParticipants int NULL
+EventTasks MinParticipants int NULL
 EventTasks HoursEstimate decimal(5,2) NULL
 EventTasks OrderIndex int NOT NULL ((0))
 EventTasks CreatedAt datetime NOT NULL (getdate())
@@ -161,7 +168,8 @@ EventTypes EventTypeId int NOT NULL IDENTITY
 EventTypes Name nvarchar(100) NOT NULL
 EventTypes Description nvarchar(255) NULL
 EventTypes Icon nvarchar(50) NULL
-EventTypes Color nvarchar(7) NULL
+EventTypes ColorHex nvarchar(50) NULL
+EventTypes BgColorHex nvarchar(50) NULL
 EventTypes Created datetime NOT NULL (getdate())
 GeneratorAsset AssetId int NOT NULL IDENTITY
 GeneratorAsset FileName nvarchar(255) NOT NULL
@@ -207,8 +215,8 @@ GeneratorTemplate DeletedAt datetime2 NULL
 GeneratorTemplate UserId int NULL
 Groups GroupId int NOT NULL IDENTITY
 Groups Name nvarchar(100) NOT NULL
-Groups ColorHex char(7) NULL
-Groups BgColorHex char(7) NULL
+Groups ColorHex nvarchar(50) NULL
+Groups BgColorHex nvarchar(50) NULL
 Groups IconType nvarchar(50) NULL
 Groups Description nvarchar(255) NULL
 Groups Publish bit NOT NULL ((0))
@@ -225,8 +233,8 @@ Invites InviteType nvarchar(50) NULL
 Invites ClaimedByTrackerId int NULL
 Labels LabelId int NOT NULL IDENTITY
 Labels Name nvarchar(100) NOT NULL
-Labels ColorHex char(7) NULL
-Labels BgColorHex char(7) NULL
+Labels ColorHex nvarchar(50) NULL
+Labels BgColorHex nvarchar(50) NULL
 Labels IconType nvarchar(50) NULL
 Labels LabelType nvarchar(25) NULL
 Labels Publish bit NOT NULL ((0))
@@ -244,8 +252,8 @@ Locations CreatedAt datetime NOT NULL (getutcdate())
 Locations ModifiedAt datetime NOT NULL (getutcdate())
 OrganizationRoles OrganizationRoleId int NOT NULL IDENTITY
 OrganizationRoles Name nvarchar(50) NULL
-OrganizationRoles ColorHex nchar(7) NULL
-OrganizationRoles BgColorHex nchar(7) NULL
+OrganizationRoles ColorHex nvarchar(50) NULL
+OrganizationRoles BgColorHex nvarchar(50) NULL
 Organizations OrganizationId int NOT NULL IDENTITY
 Organizations Name nvarchar(250) NULL
 Organizations OwnedBy int NULL
@@ -257,7 +265,7 @@ OrganizationUsers OrganizationUserId int NOT NULL IDENTITY
 OrganizationUsers UserId int NULL
 OrganizationUsers OrganizationRoleId int NULL
 OrganizationUsers AssignedBy int NULL
-OrganizationUsers AssingedAt datetime NULL (getdate())
+OrganizationUsers AssignedAt datetime NULL (getdate())
 Roles RoleId int NOT NULL IDENTITY
 Roles Name nvarchar(50) NULL
 Roles HexColor nvarchar(50) NULL
@@ -331,8 +339,9 @@ UserSocialAccounts Verified bit NOT NULL ((0))
 UserSocialAccounts Created datetime NOT NULL (getdate())
 UserSocialAccounts Modified datetime NOT NULL (getdate())
 UserSocialAccounts UserId int NULL
+UserSocialAccounts ExternalId nvarchar(255) NULL
 
-(239 rows affected)
+(248 rows affected)
 
 ```
 
@@ -342,10 +351,11 @@ Table Row_Count
 ----- ---------
 Cities 342
 EventParticipants 0
-Events 1
+Events 2
+EventSkills 0
 EventTaskAssignments 0
-EventTasks 0
-EventTypes 7
+EventTasks 10
+EventTypes 6
 GeneratorAsset 0
 GeneratorLayer 0
 GeneratorRenderJob 0
@@ -359,17 +369,17 @@ Organizations 1
 OrganizationUsers 0
 Roles 5
 Settings 1
-SocialPlatforms 6
+SocialPlatforms 8
 TrackerLabels 0
 TrackerRoles 3
-Trackers 9
+Trackers 10
 UserGroups 0
 UserLabels 0
-UserRoles 0
+UserRoles 33
 Users 33
-UserSocialAccounts 1
+UserSocialAccounts 2
 
-(28 rows affected)
+(29 rows affected)
 
 ```
 

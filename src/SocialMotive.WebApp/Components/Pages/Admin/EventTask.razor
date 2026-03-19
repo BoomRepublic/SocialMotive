@@ -3,6 +3,8 @@
 @using Microsoft.AspNetCore.Authorization
 @using SocialMotive.Core.Model.Admin
 @using AdminEventTask = SocialMotive.Core.Model.Admin.EventTask
+@using AdminEvent = SocialMotive.Core.Model.Admin.Event
+@using AdminEventSkill = SocialMotive.Core.Model.Admin.EventSkill
 @attribute [Authorize(Roles = "Admin")]
 @inject AdminApiService Api
 @inject NavigationManager Navigation
@@ -21,50 +23,87 @@
     }
     else
     {
-        <TelerikForm Model="@_item"
-                     OnValidSubmit="@HandleValidSubmit"
-                     ValidationMessageType="@FormValidationMessageType.Tooltip">
-            <FormItems>
-                <FormItem ColSpan="2">
-                    <Template>
-                        <div class="field-grid">
-                            <label class="field-label">Event ID</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.EventId" />
+        <TelerikTabStrip>
+            <TabStripTab Title="Edit">
+                <TelerikForm Model="@_item"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormItems>
+                        <FormItem ColSpan="2">
+                            <Template>
+                                <div class="field-grid">
+                                    <label class="field-label">Event</label>
+                                    <TelerikComboBox Data="@_events"
+                                                     TextField="Title"
+                                                     ValueField="EventId"
+                                                     @bind-Value="@_item.EventId"
+                                                     TValue="int"
+                                                     TItem="AdminEvent"
+                                                     Filterable="true"
+                                                     Placeholder="-- Select event --" />
 
-                            <label class="field-label">Name</label>
-                            <TelerikTextBox @bind-Value="@_item.Name" />
+                                    <label class="field-label">Event Skill</label>
+                                    <TelerikComboBox Data="@_eventSkills"
+                                                     TextField="Name"
+                                                     ValueField="EventSkillId"
+                                                     @bind-Value="@_item.EventSkillId"
+                                                     TValue="int?"
+                                                     TItem="AdminEventSkill"
+                                                     Filterable="true"
+                                                     Placeholder="-- Select skill --" />
 
-                            <label class="field-label">Description</label>
-                            <TelerikTextBox @bind-Value="@_item.Description" />
+                                    <label class="field-label">Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.Name" />
 
-                            <label class="field-label">Difficulty</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.Difficulty" />
+                                    <label class="field-label">Description</label>
+                                    <TelerikTextBox @bind-Value="@_item.Description" />
 
-                            <label class="field-label">Required</label>
-                            <TelerikCheckBox @bind-Value="@_item.Required" />
+                                    <label class="field-label">Difficulty</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.Difficulty" />
 
-                            <label class="field-label">Max Participants</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.MaxParticipants" />
+                                    <label class="field-label">Required</label>
+                                    <TelerikCheckBox @bind-Value="@_item.Required" />
 
-                            <label class="field-label">Hours Estimate</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.HoursEstimate" />
+                                    <label class="field-label">Max Participants</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.MaxParticipants" />
 
-                            <label class="field-label">Order Index</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.OrderIndex" />
-                        </div>
-                    </Template>
-                </FormItem>
-            </FormItems>
-            <FormButtons>
-                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
-                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/event-tasks"))">Cancel</TelerikButton>
-            </FormButtons>
-        </TelerikForm>
+                                    <label class="field-label">Min Participants</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.MinParticipants" />
 
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
-        }
+                                    <label class="field-label">Hours Estimate</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.HoursEstimate" />
+
+                                    <label class="field-label">Order Index</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.OrderIndex" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                        <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/event-tasks"))">Cancel</TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+                }
+            </TabStripTab>
+
+            @if (!IsCreateMode)
+            {
+                <TabStripTab Title="Details">
+                    <div class="field-grid">
+                        <label class="field-label">Created At</label>
+                        <span>@_item.CreatedAt.ToString("g")</span>
+
+                        <label class="field-label">Modified By</label>
+                        <span>@(_item.ModifiedBy?.ToString() ?? "—")</span>
+                    </div>
+                </TabStripTab>
+            }
+        </TelerikTabStrip>
     }
 </div>
 
@@ -72,12 +111,22 @@
     [Parameter] public int EventTaskId { get; set; }
 
     private AdminEventTask? _item;
+    private List<AdminEvent> _events = new();
+    private List<AdminEventSkill> _eventSkills = new();
     private string? _errorMessage;
     private bool IsCreateMode => EventTaskId == 0;
     private string PageMode => IsCreateMode ? "Create" : "Edit";
 
     protected override async Task OnInitializedAsync()
     {
+        _events = (await Api.GetEventsAsync())
+            .OrderBy(e => e.Title)
+            .ToList();
+
+        _eventSkills = (await Api.GetEventSkillsAsync())
+            .OrderBy(s => s.Name)
+            .ToList();
+
         if (IsCreateMode)
         {
             _item = new AdminEventTask();

@@ -5,6 +5,8 @@
 @attribute [Authorize(Roles = "Admin")]
 @using _User = SocialMotive.Core.Model.Admin.User
 @using AdminCity = SocialMotive.Core.Model.Admin.City
+@using AdminGroup = SocialMotive.Core.Model.Admin.Group
+@using AdminLabel = SocialMotive.Core.Model.Admin.Label
 @inject AdminApiService Api
 @inject NavigationManager Navigation
 
@@ -47,13 +49,14 @@
                                     <TelerikTextBox @bind-Value="@_item.Email" />
 
                                     <label class="field-label">City</label>
-                                    <TelerikDropDownList Data="@_cities"
-                                                         TextField="@nameof(AdminCity.Name)"
-                                                         ValueField="@nameof(AdminCity.CityId)"
-                                                         @bind-Value="@_item.CityId"
-                                                         TValue="int?"
-                                                         TItem="AdminCity"
-                                                         DefaultText="Select city..." />
+                                    <TelerikComboBox Data="@_cities"
+                                                     TextField="@nameof(AdminCity.Name)"
+                                                     ValueField="@nameof(AdminCity.CityId)"
+                                                     @bind-Value="@_item.CityId"
+                                                     TValue="int?"
+                                                     TItem="AdminCity"
+                                                     Filterable="true"
+                                                     Placeholder="Select city..." />
 
                                     <label class="field-label">Mobile Phone</label>
                                     <TelerikTextBox @bind-Value="@_item.MobilePhone" />
@@ -88,9 +91,24 @@
                             <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Social Account</GridCommandButton>
                         </GridToolBarTemplate>
                         <GridColumns>
-                            <GridColumn Field="@nameof(UserSocialAccount.Platform)" Title="Platform" Width="120px" />
+                            <GridColumn Field="@nameof(UserSocialAccount.SocialPlatformName)" Title="Platform" Width="150px" Editable="false" />
+                            <GridColumn Field="@nameof(UserSocialAccount.SocialPlatformId)" Title="Platform" Width="150px" Visible="false">
+                                <EditorTemplate>
+                                    @{
+                                        var ctx = (UserSocialAccount)context;
+                                        <TelerikComboBox Data="@_socialPlatforms"
+                                                         TextField="@nameof(SocialPlatform.Name)"
+                                                         ValueField="@nameof(SocialPlatform.SocialPlatformId)"
+                                                         @bind-Value="@ctx.SocialPlatformId"
+                                                         TValue="int?"
+                                                         TItem="SocialPlatform"
+                                                         Placeholder="Select platform..." />
+                                    }
+                                </EditorTemplate>
+                            </GridColumn>
                             <GridColumn Field="@nameof(UserSocialAccount.UserName)" Title="Username" />
                             <GridColumn Field="@nameof(UserSocialAccount.Url)" Title="URL" />
+                            <GridColumn Field="@nameof(UserSocialAccount.ExternalId)" Title="External ID" Width="160px" />
                             <GridColumn Field="@nameof(UserSocialAccount.Verified)" Title="Verified" Width="100px" />
                             <GridColumn Field="@nameof(UserSocialAccount.Created)" Title="Created" Width="160px" DisplayFormat="{0:yyyy-MM-dd}" Editable="false" />
                             <GridCommandColumn Width="160px">
@@ -102,6 +120,108 @@
                         </GridColumns>
                     </TelerikGrid>
                 </TabStripTab>
+
+                <TabStripTab Title="Roles">
+                    <div class="roles-container">
+                        @if (_roles.Count == 0)
+                        {
+                            <p class="text-muted">No roles available.</p>
+                        }
+                        else
+                        {
+                            @foreach (var role in _roles)
+                            {
+                                var isChecked = _assignedRoleIds.Contains(role.RoleId);
+                                <div class="role-item">
+                                    <TelerikCheckBox Value="@isChecked"
+                                                     ValueChanged="@((bool val) => OnRoleToggled(role.RoleId, val))"
+                                                     Id="@($"role-{role.RoleId}")"
+                                                     Enabled="@(!_savingRoles)" />
+                                    <label for="@($"role-{role.RoleId}")" class="role-label">
+                                        @if (!string.IsNullOrEmpty(role.HexColor))
+                                        {
+                                            <span class="role-dot" style="background-color: @role.HexColor;"></span>
+                                        }
+                                        @role.Name
+                                    </label>
+                                </div>
+                            }
+                        }
+                        @if (!string.IsNullOrEmpty(_rolesMessage))
+                        {
+                            <div class="k-messagebox k-messagebox-error k-mt-4">@_rolesMessage</div>
+                        }
+                    </div>
+                </TabStripTab>
+
+                <TabStripTab Title="Groups">
+                    <div class="checkbox-list-container">
+                        @if (_groups.Count == 0)
+                        {
+                            <p class="text-muted">No groups available.</p>
+                        }
+                        else
+                        {
+                            @foreach (var group in _groups)
+                            {
+                                var isChecked = _assignedGroupIds.Contains(group.GroupId);
+                                <div class="checkbox-list-item">
+                                    <TelerikCheckBox Value="@isChecked"
+                                                     ValueChanged="@((bool val) => OnGroupToggled(group.GroupId, val))"
+                                                     Id="@($"group-{group.GroupId}")"
+                                                     Enabled="@(!_savingGroups)" />
+                                    <label for="@($"group-{group.GroupId}")" class="checkbox-list-label">
+                                        @if (!string.IsNullOrEmpty(group.ColorHex) || !string.IsNullOrEmpty(group.BgColorHex))
+                                        {
+                                            <span class="badge-dot" style="background-color: @(group.BgColorHex ?? group.ColorHex); border: 2px solid @(group.ColorHex ?? "transparent");"></span>
+                                        }
+                                        @group.Name
+                                    </label>
+                                </div>
+                            }
+                        }
+                        @if (!string.IsNullOrEmpty(_groupsMessage))
+                        {
+                            <div class="k-messagebox k-messagebox-error k-mt-4">@_groupsMessage</div>
+                        }
+                    </div>
+                </TabStripTab>
+
+                <TabStripTab Title="Labels">
+                    <div class="checkbox-list-container">
+                        @if (_labels.Count == 0)
+                        {
+                            <p class="text-muted">No labels available.</p>
+                        }
+                        else
+                        {
+                            @foreach (var label in _labels)
+                            {
+                                var isChecked = _assignedLabelIds.Contains(label.LabelId);
+                                <div class="checkbox-list-item">
+                                    <TelerikCheckBox Value="@isChecked"
+                                                     ValueChanged="@((bool val) => OnLabelToggled(label.LabelId, val))"
+                                                     Id="@($"label-{label.LabelId}")"
+                                                     Enabled="@(!_savingLabels)" />
+                                    <label for="@($"label-{label.LabelId}")" class="checkbox-list-label">
+                                        @if (!string.IsNullOrEmpty(label.ColorHex) || !string.IsNullOrEmpty(label.BgColorHex))
+                                        {
+                                            <span class="badge-pill" style="background-color: @(label.BgColorHex ?? "#eee"); color: @(label.ColorHex ?? "inherit"); padding: 2px 8px; border-radius: 12px; font-size: 0.85rem;">@label.Name</span>
+                                        }
+                                        else
+                                        {
+                                            @label.Name
+                                        }
+                                    </label>
+                                </div>
+                            }
+                        }
+                        @if (!string.IsNullOrEmpty(_labelsMessage))
+                        {
+                            <div class="k-messagebox k-messagebox-error k-mt-4">@_labelsMessage</div>
+                        }
+                    </div>
+                </TabStripTab>
             }
         </TelerikTabStrip>
     }
@@ -112,7 +232,20 @@
 
     private _User? _item;
     private List<AdminCity> _cities = new();
+    private List<SocialPlatform> _socialPlatforms = new();
     private List<UserSocialAccount> _socialAccounts = new();
+    private List<Role> _roles = new();
+    private HashSet<int> _assignedRoleIds = new();
+    private bool _savingRoles;
+    private string? _rolesMessage;
+    private List<AdminGroup> _groups = new();
+    private HashSet<int> _assignedGroupIds = new();
+    private bool _savingGroups;
+    private string? _groupsMessage;
+    private List<AdminLabel> _labels = new();
+    private HashSet<int> _assignedLabelIds = new();
+    private bool _savingLabels;
+    private string? _labelsMessage;
     private string? _errorMessage;
     private bool IsCreateMode => UserId == 0;
     private string PageMode => IsCreateMode ? "Create" : "Edit";
@@ -123,6 +256,10 @@
             .OrderBy(c => c.Name)
             .ToList();
 
+        _socialPlatforms = (await Api.GetSocialPlatformsAsync())
+            .OrderBy(p => p.Name)
+            .ToList();
+
         if (IsCreateMode)
         {
             _item = new _User();
@@ -131,6 +268,88 @@
 
         _item = await Api.GetUserAsync(UserId);
         _socialAccounts = await Api.GetUserSocialAccountsByUserAsync(UserId);
+
+        _roles = (await Api.GetRolesAsync()).OrderBy(r => r.Name).ToList();
+        var userRoles = await Api.GetUserRolesAsync(UserId);
+        _assignedRoleIds = userRoles.Where(ur => ur.RoleId.HasValue).Select(ur => ur.RoleId!.Value).ToHashSet();
+
+        _groups = (await Api.GetGroupsAsync()).OrderBy(g => g.Name).ToList<AdminGroup>();
+        var userGroups = await Api.GetUserGroupsAsync(UserId);
+        _assignedGroupIds = userGroups.Where(ug => ug.GroupId.HasValue).Select(ug => ug.GroupId!.Value).ToHashSet();
+
+        _labels = (await Api.GetLabelsAsync()).OrderBy(l => l.Name).ToList<AdminLabel>();
+        var userLabels = await Api.GetUserLabelsAsync(UserId);
+        _assignedLabelIds = userLabels.Where(ul => ul.LabelId.HasValue).Select(ul => ul.LabelId!.Value).ToHashSet();
+    }
+
+    private async Task OnRoleToggled(int roleId, bool isChecked)
+    {
+        _savingRoles = true;
+        _rolesMessage = null;
+
+        if (isChecked)
+            _assignedRoleIds.Add(roleId);
+        else
+            _assignedRoleIds.Remove(roleId);
+
+        var result = await Api.UpdateUserRolesAsync(UserId, _assignedRoleIds.ToList());
+        if (result == null)
+        {
+            _rolesMessage = "Failed to update roles. Please try again.";
+            // Revert the toggle on failure
+            if (isChecked)
+                _assignedRoleIds.Remove(roleId);
+            else
+                _assignedRoleIds.Add(roleId);
+        }
+
+        _savingRoles = false;
+    }
+
+    private async Task OnGroupToggled(int groupId, bool isChecked)
+    {
+        _savingGroups = true;
+        _groupsMessage = null;
+
+        if (isChecked)
+            _assignedGroupIds.Add(groupId);
+        else
+            _assignedGroupIds.Remove(groupId);
+
+        var result = await Api.UpdateUserGroupsAsync(UserId, _assignedGroupIds.ToList());
+        if (result == null)
+        {
+            _groupsMessage = "Failed to update groups. Please try again.";
+            if (isChecked)
+                _assignedGroupIds.Remove(groupId);
+            else
+                _assignedGroupIds.Add(groupId);
+        }
+
+        _savingGroups = false;
+    }
+
+    private async Task OnLabelToggled(int labelId, bool isChecked)
+    {
+        _savingLabels = true;
+        _labelsMessage = null;
+
+        if (isChecked)
+            _assignedLabelIds.Add(labelId);
+        else
+            _assignedLabelIds.Remove(labelId);
+
+        var result = await Api.UpdateUserLabelsAsync(UserId, _assignedLabelIds.ToList());
+        if (result == null)
+        {
+            _labelsMessage = "Failed to update labels. Please try again.";
+            if (isChecked)
+                _assignedLabelIds.Remove(labelId);
+            else
+                _assignedLabelIds.Add(labelId);
+        }
+
+        _savingLabels = false;
     }
 
     private async Task HandleValidSubmit()
@@ -185,5 +404,59 @@
 
     .field-label {
         font-weight: 600;
+    }
+
+    .roles-container {
+        padding: 1rem;
+    }
+
+    .role-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0;
+    }
+
+    .role-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .role-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .checkbox-list-container {
+        padding: 1rem;
+    }
+
+    .checkbox-list-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0;
+    }
+
+    .checkbox-list-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .badge-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
     }
 </style>

@@ -1,0 +1,189 @@
+@using SocialMotive.Core.Model.Telegram
+@using SocialMotive.Core.Services
+@inject TelegramApiService TelegramApi
+
+<div class="telegram-link-card">
+    <h4>📱 Telegram Link</h4>
+
+    @if (_isLoading)
+    {
+        <TelerikLoader Size="Medium" />
+    }
+    else if (_status == null)
+    {
+        <div class="k-messagebox k-messagebox-warning">Unable to load Telegram status.</div>
+    }
+    else if (_status.IsLinked)
+    {
+        <div class="telegram-linked">
+            <div class="telegram-status-badge linked">
+                <span class="k-icon k-i-check-circle"></span> Linked
+            </div>
+            <div class="telegram-info">
+                <div><strong>Username:</strong> @_status.TelegramUsername</div>
+                <div><strong>Linked since:</strong> @_status.LinkedAt?.ToString("yyyy-MM-dd")</div>
+            </div>
+            <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Error"
+                           OnClick="@HandleUnlink"
+                           Enabled="@(!_isProcessing)">
+                Unlink Telegram
+            </TelerikButton>
+        </div>
+    }
+    else
+    {
+        <div class="telegram-unlinked">
+            <div class="telegram-status-badge unlinked">
+                <span class="k-icon k-i-close-circle"></span> Not linked
+            </div>
+            <p class="text-muted">Link your Telegram account to enable live GPS location tracking during events.</p>
+
+            @if (_linkCode != null)
+            {
+                <div class="telegram-code-box">
+                    <p>Send this code to the <strong>SocialMotive Bot</strong> on Telegram:</p>
+                    <div class="telegram-code">@_linkCode.Code</div>
+                    <p class="text-muted">
+                        Message the bot: <code>/link @_linkCode.Code</code><br />
+                        Expires at @_linkCode.ExpiresAt.ToLocalTime().ToString("HH:mm")
+                    </p>
+                </div>
+            }
+            else
+            {
+                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary"
+                               OnClick="@HandleGenerateCode"
+                               Enabled="@(!_isProcessing)">
+                    Generate Link Code
+                </TelerikButton>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_message))
+    {
+        <div class="k-messagebox @(_isError ? "k-messagebox-error" : "k-messagebox-success") k-mt-2">
+            @_message
+        </div>
+    }
+</div>
+
+@code {
+    private LinkStatus? _status;
+    private LinkCode? _linkCode;
+    private bool _isLoading = true;
+    private bool _isProcessing;
+    private string? _message;
+    private bool _isError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatusAsync();
+    }
+
+    private async Task LoadStatusAsync()
+    {
+        _isLoading = true;
+        _message = null;
+        _linkCode = null;
+        _status = await TelegramApi.GetLinkStatusAsync();
+        _isLoading = false;
+    }
+
+    private async Task HandleGenerateCode()
+    {
+        _isProcessing = true;
+        _message = null;
+
+        _linkCode = await TelegramApi.GenerateLinkCodeAsync();
+
+        if (_linkCode == null)
+        {
+            _message = "Failed to generate link code. Please try again.";
+            _isError = true;
+        }
+
+        _isProcessing = false;
+    }
+
+    private async Task HandleUnlink()
+    {
+        _isProcessing = true;
+        _message = null;
+
+        var success = await TelegramApi.UnlinkAsync();
+
+        if (success)
+        {
+            _message = "Telegram account unlinked successfully.";
+            _isError = false;
+            await LoadStatusAsync();
+        }
+        else
+        {
+            _message = "Failed to unlink Telegram account.";
+            _isError = true;
+        }
+
+        _isProcessing = false;
+    }
+}
+
+<style>
+    .telegram-link-card {
+        background: var(--kendo-color-surface-alt, #fff);
+        border: 1px solid var(--kendo-color-border, #ddd);
+        border-radius: 8px;
+        padding: 1.5rem;
+        max-width: 480px;
+    }
+
+    .telegram-link-card h4 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+
+    .telegram-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .telegram-status-badge.linked {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .telegram-status-badge.unlinked {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .telegram-info {
+        margin-bottom: 1rem;
+        line-height: 1.8;
+    }
+
+    .telegram-code-box {
+        background: #f8f9fa;
+        border: 1px dashed #ccc;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        margin-top: 0.75rem;
+    }
+
+    .telegram-code {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: 0.3em;
+        font-family: monospace;
+        color: #0088cc;
+        padding: 0.5rem;
+    }
+</style>

@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for User management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminUser")]
     public class User
     {
         public int UserId { get; set; }

@@ -1,8 +1,11 @@
+using Swashbuckle.AspNetCore.Annotations;
+
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for OrganizationUser management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminOrganizationUser")]
     public class OrganizationUser
     {
         public int OrganizationUserId { get; set; }
@@ -11,8 +14,8 @@ namespace SocialMotive.Core.Model.Admin
 
         public int? OrganizationRoleId { get; set; }
 
-        public int? AssignedBy { get; set; }
+        public int? AssignedBy { get; init; }
 
-        public DateTime? AssingedAt { get; set; }
+        public DateTime? AssingedAt { get; init; }
     }
 }

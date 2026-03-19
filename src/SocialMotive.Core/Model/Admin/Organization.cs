@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for Organization management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminOrganization")]
     public class Organization
     {
         public int OrganizationId { get; set; }
@@ -14,7 +16,7 @@ namespace SocialMotive.Core.Model.Admin
 
         public int? OwnedBy { get; init; }
 
-        public int? CreatedBy { get; init; }
+        public int? CreatedBy { get; set; }
 
         public int? ModifiedBy { get; init; }
 

@@ -27,10 +27,10 @@
         </GridToolBarTemplate>
         <GridColumns>
             <GridColumn Field="@nameof(AdminGroup.GroupId)" Title="ID" Width="80px" />
-            <GridColumn Field="@nameof(AdminGroup.NameDisplay)" Title="Name">
+            <GridColumn Field="@nameof(AdminGroup.Name)" Title="Name">
                 <Template Context="rowItem">
                     @{ var item = (AdminGroup)rowItem; }
-                    @((MarkupString)(item.NameDisplay ?? string.Empty))
+                    @((MarkupString)($@"<span class=""badge"" style=""color: {item.ColorHex}; background-color: {item.BgColorHex};"">{item.Name}</span>"))
                 </Template>
             </GridColumn>
             <GridColumn Field="@nameof(AdminGroup.IconType)" Title="Icon" Width="120px" />

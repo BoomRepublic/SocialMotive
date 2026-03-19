@@ -3,6 +3,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using SocialMotive.Core.Model.Admin
 @using AdminOrganization = SocialMotive.Core.Model.Admin.Organization
+@using AdminOrganizationRole = SocialMotive.Core.Model.Admin.OrganizationRole
+@using AdminOrganizationUser = SocialMotive.Core.Model.Admin.OrganizationUser
+@using AdminUser = SocialMotive.Core.Model.Admin.User
 @attribute [Authorize(Roles = "Admin")]
 @inject AdminApiService Api
 @inject NavigationManager Navigation
@@ -21,47 +24,139 @@
     }
     else
     {
-        <TelerikForm Model="@_item"
-                     OnValidSubmit="@HandleValidSubmit"
-                     ValidationMessageType="@FormValidationMessageType.Tooltip">
-            <FormItems>
-                <FormItem ColSpan="2">
-                    <Template>
-                        <div class="field-grid">
-                            <label class="field-label">Name</label>
-                            <TelerikTextBox @bind-Value="@_item.Name" />
+        <TelerikTabStrip>
+            <TabStripTab Title="Edit">
+                <TelerikForm Model="@_item"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormItems>
+                        <FormItem ColSpan="2">
+                            <Template>
+                                <div class="field-grid">
+                                    <label class="field-label">Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.Name" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                        <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/organizations"))">Cancel</TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
 
-                            @if (!IsCreateMode)
-                            {
-                                <label class="field-label">Owned By</label>
-                                <span>@(_item.OwnedBy?.ToString() ?? "—")</span>
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+                }
+            </TabStripTab>
 
-                                <label class="field-label">Created By</label>
-                                <span>@(_item.CreatedBy?.ToString() ?? "—")</span>
+            @if (!IsCreateMode)
+            {
+                <TabStripTab Title="Details">
+                    <div class="field-grid">
+                        <label class="field-label">Owned By</label>
+                        <span>@(_item.OwnedBy?.ToString() ?? "—")</span>
 
-                                <label class="field-label">Modified By</label>
-                                <span>@(_item.ModifiedBy?.ToString() ?? "—")</span>
+                        <label class="field-label">Created By</label>
+                        <span>@(_item.CreatedBy?.ToString() ?? "—")</span>
 
-                                <label class="field-label">Created At</label>
-                                <span>@(_item.CreatedAt?.ToString("g") ?? "—")</span>
+                        <label class="field-label">Modified By</label>
+                        <span>@(_item.ModifiedBy?.ToString() ?? "—")</span>
 
-                                <label class="field-label">Modified At</label>
-                                <span>@(_item.ModifiedAt?.ToString("g") ?? "—")</span>
-                            }
-                        </div>
-                    </Template>
-                </FormItem>
-            </FormItems>
-            <FormButtons>
-                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
-                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/organizations"))">Cancel</TelerikButton>
-            </FormButtons>
-        </TelerikForm>
+                        <label class="field-label">Created At</label>
+                        <span>@(_item.CreatedAt?.ToString("g") ?? "—")</span>
 
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
-        }
+                        <label class="field-label">Modified At</label>
+                        <span>@(_item.ModifiedAt?.ToString("g") ?? "—")</span>
+                    </div>
+                </TabStripTab>
+
+                <TabStripTab Title="Roles">
+                    <TelerikGrid Data="@_organizationRoles"
+                                 EditMode="@GridEditMode.Inline"
+                                 OnCreate="@OnRoleCreate"
+                                 OnUpdate="@OnRoleUpdate"
+                                 OnDelete="@OnRoleDelete"
+                                 Pageable="true"
+                                 PageSize="10"
+                                 Sortable="true">
+                        <GridToolBarTemplate>
+                            <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Role</GridCommandButton>
+                        </GridToolBarTemplate>
+                        <GridColumns>
+                            <GridColumn Field="@nameof(AdminOrganizationRole.OrganizationRoleId)" Title="ID" Width="90px" Editable="false" />
+                            <GridColumn Field="@nameof(AdminOrganizationRole.Name)" Title="Name" />
+                            <GridColumn Field="@nameof(AdminOrganizationRole.ColorHex)" Title="Color" Width="140px" />
+                            <GridColumn Field="@nameof(AdminOrganizationRole.BgColorHex)" Title="BG Color" Width="140px" />
+                            <GridCommandColumn Width="180px">
+                                <GridCommandButton Command="Edit" Icon="@SvgIcon.Pencil" />
+                                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" />
+                                <GridCommandButton Command="Save" ShowInEdit="true" />
+                                <GridCommandButton Command="Cancel" ShowInEdit="true" />
+                            </GridCommandColumn>
+                        </GridColumns>
+                    </TelerikGrid>
+                </TabStripTab>
+
+                <TabStripTab Title="Users">
+                    <TelerikGrid Data="@_organizationUsers"
+                                 EditMode="@GridEditMode.Inline"
+                                 OnCreate="@OnOrganizationUserCreate"
+                                 OnUpdate="@OnOrganizationUserUpdate"
+                                 OnDelete="@OnOrganizationUserDelete"
+                                 Pageable="true"
+                                 PageSize="10"
+                                 Sortable="true">
+                        <GridToolBarTemplate>
+                            <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add User</GridCommandButton>
+                        </GridToolBarTemplate>
+                        <GridColumns>
+                            <GridColumn Field="@nameof(AdminOrganizationUser.OrganizationUserId)" Title="ID" Width="90px" Editable="false" />
+                            <GridColumn Field="@nameof(AdminOrganizationUser.UserId)" Title="User" Width="220px">
+                                <EditorTemplate>
+                                    @{
+                                        var row = (AdminOrganizationUser)context;
+                                    }
+                                    <TelerikComboBox Data="@_userOptions"
+                                                     TextField="DisplayName"
+                                                     ValueField="UserId"
+                                                     @bind-Value="@row.UserId"
+                                                     TValue="int?"
+                                                     TItem="UserOption"
+                                                     Filterable="true"
+                                                     Suggest="true"
+                                                     Placeholder="-- Select user --" />
+                                </EditorTemplate>
+                            </GridColumn>
+                            <GridColumn Field="@nameof(AdminOrganizationUser.OrganizationRoleId)" Title="Role" Width="220px">
+                                <EditorTemplate>
+                                    @{
+                                        var row = (AdminOrganizationUser)context;
+                                    }
+                                    <TelerikComboBox Data="@_organizationRoleOptions"
+                                                     TextField="Name"
+                                                     ValueField="OrganizationRoleId"
+                                                     @bind-Value="@row.OrganizationRoleId"
+                                                     TValue="int?"
+                                                     TItem="AdminOrganizationRole"
+                                                     Filterable="true"
+                                                     Placeholder="-- Select role --" />
+                                </EditorTemplate>
+                            </GridColumn>
+                            <GridColumn Field="@nameof(AdminOrganizationUser.AssignedBy)" Title="Assigned By" Width="130px" Editable="false" />
+                            <GridColumn Field="@nameof(AdminOrganizationUser.AssingedAt)" Title="Assigned At" Width="170px" DisplayFormat="{0:g}" Editable="false" />
+                            <GridCommandColumn Width="180px">
+                                <GridCommandButton Command="Edit" Icon="@SvgIcon.Pencil" />
+                                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" />
+                                <GridCommandButton Command="Save" ShowInEdit="true" />
+                                <GridCommandButton Command="Cancel" ShowInEdit="true" />
+                            </GridCommandColumn>
+                        </GridColumns>
+                    </TelerikGrid>
+                </TabStripTab>
+            }
+        </TelerikTabStrip>
     }
 </div>
 
@@ -69,6 +164,10 @@
     [Parameter] public int OrganizationId { get; set; }
 
     private AdminOrganization? _item;
+    private List<AdminOrganizationRole> _organizationRoles = new();
+    private List<AdminOrganizationRole> _organizationRoleOptions = new();
+    private List<AdminOrganizationUser> _organizationUsers = new();
+    private List<UserOption> _userOptions = new();
     private string? _errorMessage;
     private bool IsCreateMode => OrganizationId == 0;
     private string PageMode => IsCreateMode ? "Create" : "Edit";
@@ -81,7 +180,29 @@
             return;
         }
 
-        _item = await Api.GetOrganizationAsync(OrganizationId);
+        var organizationTask = Api.GetOrganizationAsync(OrganizationId);
+        var rolesTask = Api.GetOrganizationRolesAsync();
+        var usersTask = Api.GetOrganizationUsersAsync();
+        var allUsersTask = Api.GetUsersAsync();
+        await Task.WhenAll(organizationTask, rolesTask, usersTask, allUsersTask);
+
+        _item = await organizationTask;
+        _organizationRoles = (await rolesTask)
+            .OrderBy(r => r.Name)
+            .ToList();
+        _organizationRoleOptions = _organizationRoles;
+        _organizationUsers = await usersTask;
+
+        _userOptions = (await allUsersTask)
+            .OrderBy(u => u.FirstName)
+            .ThenBy(u => u.LastName)
+            .ThenBy(u => u.Username)
+            .Select(u => new UserOption
+            {
+                UserId = u.UserId,
+                DisplayName = BuildUserDisplayName(u)
+            })
+            .ToList();
     }
 
     private async Task HandleValidSubmit()
@@ -98,6 +219,88 @@
             Navigation.NavigateTo("/admin/organizations");
         else
             _errorMessage = "Failed to save organization. Please try again.";
+    }
+
+    private async Task OnRoleCreate(GridCommandEventArgs args)
+    {
+        var role = (AdminOrganizationRole)args.Item;
+        var created = await Api.CreateOrganizationRoleAsync(role);
+        if (created != null)
+        {
+            _organizationRoles = (await Api.GetOrganizationRolesAsync())
+                .OrderBy(r => r.Name)
+                .ToList();
+            _organizationRoleOptions = _organizationRoles;
+        }
+    }
+
+    private async Task OnRoleUpdate(GridCommandEventArgs args)
+    {
+        var role = (AdminOrganizationRole)args.Item;
+        var updated = await Api.UpdateOrganizationRoleAsync(role.OrganizationRoleId, role);
+        if (updated != null)
+        {
+            _organizationRoles = (await Api.GetOrganizationRolesAsync())
+                .OrderBy(r => r.Name)
+                .ToList();
+            _organizationRoleOptions = _organizationRoles;
+        }
+    }
+
+    private async Task OnRoleDelete(GridCommandEventArgs args)
+    {
+        var role = (AdminOrganizationRole)args.Item;
+        await Api.DeleteOrganizationRoleAsync(role.OrganizationRoleId);
+        _organizationRoles = (await Api.GetOrganizationRolesAsync())
+            .OrderBy(r => r.Name)
+            .ToList();
+        _organizationRoleOptions = _organizationRoles;
+    }
+
+    private async Task OnOrganizationUserCreate(GridCommandEventArgs args)
+    {
+        var user = (AdminOrganizationUser)args.Item;
+        var created = await Api.CreateOrganizationUserAsync(user);
+        if (created != null)
+            _organizationUsers = await Api.GetOrganizationUsersAsync();
+    }
+
+    private async Task OnOrganizationUserUpdate(GridCommandEventArgs args)
+    {
+        var user = (AdminOrganizationUser)args.Item;
+        var updated = await Api.UpdateOrganizationUserAsync(user.OrganizationUserId, user);
+        if (updated != null)
+            _organizationUsers = await Api.GetOrganizationUsersAsync();
+    }
+
+    private async Task OnOrganizationUserDelete(GridCommandEventArgs args)
+    {
+        var user = (AdminOrganizationUser)args.Item;
+        await Api.DeleteOrganizationUserAsync(user.OrganizationUserId);
+        _organizationUsers = await Api.GetOrganizationUsersAsync();
+    }
+
+    private static string BuildUserDisplayName(AdminUser user)
+    {
+        var fullName = string.Join(" ", new[] { user.FirstName, user.LastName }
+            .Where(part => !string.IsNullOrWhiteSpace(part)));
+
+        if (!string.IsNullOrWhiteSpace(user.Username) && !string.IsNullOrWhiteSpace(fullName))
+            return $"{user.Username} — {fullName}";
+
+        if (!string.IsNullOrWhiteSpace(user.Username))
+            return user.Username;
+
+        if (!string.IsNullOrWhiteSpace(fullName))
+            return fullName;
+
+        return $"User {user.UserId}";
+    }
+
+    private class UserOption
+    {
+        public int UserId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
     }
 }
 

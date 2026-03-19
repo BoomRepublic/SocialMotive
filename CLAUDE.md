@@ -1,8 +1,13 @@
 # SocialMotive - AI Assistant Instructions
 
 ## Project Overview
-SocialMotive is a volunteer/event organizer platform built as a unified Blazor Web App. It has three feature areas:
-- **Web** — Volunteer portal (browse events, RSVP, track participation)
+SocialMotive is a worker/volunteer/event organizer platform built as a unified Blazor Web App. It has these feature areas:
+- **Public** — Public anonymous
+- **TelegramBot** — Telegram bot that interacts with platform user
+- **User** — Logged in user, access to generator and telegrambot
+- **Worker** — Worker (paid) portal (browse events, RSVP, track participation)
+- **Volunteer** — Volunteer portal (browse events, RSVP, track participation)
+- **Organizer** — Organizer portal (organize events, create tasks, track participation, manage budget)
 - **Generator** — AssetGenerator canvas editor for promotional images
 - **Admin** — CRUD data management dashboard
 
@@ -16,6 +21,7 @@ SocialMotive is a volunteer/event organizer platform built as a unified Blazor W
 - **Cookie-based claims authentication** with role-based authorization
 - **Swagger/Swashbuckle** for API documentation
 - **Telerik Document Processing** for image/canvas operations in the Generator
+- **Telegram.Bot 22.9.5.3** — Telegram bot integration for live location tracking & account linking
 
 ## Solution Structure
 ```
@@ -33,9 +39,10 @@ Blazor Component → ApiService (HttpClient) → Controller → DbContext → SQ
 ```
 
 - API controllers live in `Controllers/` and are attribute-routed under `api/`
-- Blazor components call the API through service classes in `Services/` using `IHttpClientFactory` (named client `"AdminApi"`)
+- Blazor components call the API through service classes in `Services/` using `IHttpClientFactory` (named clients: `"AdminApi"`, `"GeneratorApi"`, `"PublicApi"`, `"VolunteerApi"`, `"TelegramApi"`)
 - Services forward auth cookies from the incoming HTTP context to outgoing API calls
 - Controllers inject `SocialMotiveDbContext` directly (no repository/service abstraction layer)
+- **Telegram Bot**: `TelegramBotService` (BackgroundService, long-polling) delegates updates to `TelegramUpdateHandler` (singleton). Link codes use in-memory `ConcurrentDictionary` with expiry.
 
 ## Authorization
 - Cookie auth with 8-hour sliding expiration
@@ -85,10 +92,13 @@ Blazor Component → ApiService (HttpClient) → Controller → DbContext → SQ
 ## File Locations
 - **Models**: `src/SocialMotive.Core/Model/`
 - **DTOs**: `src/SocialMotive.Core/Model/`
+- **Telegram DTOs**: `src/SocialMotive.Core/Model/Telegram/`
 - **Mapping Profiles**: `src/SocialMotive.Core/Mapping/`
 - **DbContext**: `src/SocialMotive.Core/Data/SocialMotiveDbContext.cs`
 - **Controllers**: `src/SocialMotive.WebApp/Controllers/`
+- **Telegram Controller**: `src/SocialMotive.Core/Controllers/TelegramController.cs`
 - **Services**: `src/SocialMotive.WebApp/Services/`
+- **Telegram Bot Services**: `src/SocialMotive.Core/Services/Telegram/`
 - **Blazor Components**: `src/SocialMotive.WebApp/Components/`
 - **Blazor Pages**: `src/SocialMotive.WebApp/Components/Pages/`
 - **Layout**: `src/SocialMotive.WebApp/Components/Layout/`

@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for Group management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminGroup")]
     public class Group
     {
         public int GroupId { get; set; }
@@ -13,10 +15,10 @@ namespace SocialMotive.Core.Model.Admin
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
-        [StringLength(7)]
+        [StringLength(50)]
         public string? ColorHex { get; set; }
 
-        [StringLength(7)]
+        [StringLength(50)]
         public string? BgColorHex { get; set; }
 
         [StringLength(50)]
@@ -29,10 +31,8 @@ namespace SocialMotive.Core.Model.Admin
 
         public int Level { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; init; }
 
-        public DateTime ModifiedAt { get; set; }
-
-        public string NameDisplay => $"<span class=\"badge\" style=\"color: {ColorHex}; background-color: {BgColorHex};\">{Name}</span>";
+        public DateTime ModifiedAt { get; init; }
     }
 }

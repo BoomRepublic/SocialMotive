@@ -21,6 +21,7 @@ public partial class AdminController
         try
         {
             var accounts = await _dbContext.UserSocialAccounts
+                .Include(a => a.SocialPlatform)
                 .ProjectTo<UserSocialAccount>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
@@ -42,6 +43,7 @@ public partial class AdminController
         try
         {
             var accounts = await _dbContext.UserSocialAccounts
+                .Include(a => a.SocialPlatform)
                 .Where(a => a.UserId == userId)
                 .ProjectTo<UserSocialAccount>(_mapper.ConfigurationProvider)
                 .ToListAsync();
@@ -63,7 +65,9 @@ public partial class AdminController
     {
         try
         {
-            var account = await _dbContext.UserSocialAccounts.FindAsync(id);
+            var account = await _dbContext.UserSocialAccounts
+                .Include(a => a.SocialPlatform)
+                .FirstOrDefaultAsync(a => a.UserSocialAccountId == id);
             if (account == null)
                 return NotFound();
 

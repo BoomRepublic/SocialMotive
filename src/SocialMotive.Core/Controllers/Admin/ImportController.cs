@@ -75,7 +75,8 @@ public class ImportController : ControllerBase
                 { "Locations", typeof(DbLocation) },
                 { "Invites", typeof(DbInvite) },
                 { "Settings", typeof(DbSetting) },
-                { "UserSocialAccounts", typeof(DbUserSocialAccount) }
+                { "UserSocialAccounts", typeof(DbUserSocialAccount) },
+                { "SocialPlatforms", typeof(DbSocialPlatform) }
             };
 
             if (!tableTypeMap.TryGetValue(request.TableName, out var entityType))

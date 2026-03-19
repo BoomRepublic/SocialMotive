@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for Tracker management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminTracker")]
     public class Tracker
     {
         public int TrackerId { get; set; }
@@ -35,9 +37,9 @@ namespace SocialMotive.Core.Model.Admin
 
         public DateTime JoinedAt { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; init; }
 
-        public DateTime ModifiedAt { get; set; }
+        public DateTime ModifiedAt { get; init; }
 
         public int CheckIn { get; set; }
 

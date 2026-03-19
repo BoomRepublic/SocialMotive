@@ -38,7 +38,10 @@
                             <TelerikTextBox @bind-Value="@_item.Icon" />
 
                             <label class="field-label">Color</label>
-                            <TelerikTextBox @bind-Value="@_item.Color" />
+                            <TelerikColorPicker @bind-Value="@_item.ColorHex" />
+
+                            <label class="field-label">BG Color</label>
+                            <TelerikColorPicker @bind-Value="@_item.BgColorHex" />
                         </div>
                     </Template>
                 </FormItem>

@@ -14,6 +14,5 @@ namespace SocialMotive.Core.Data
 
         // Navigation properties
         public ICollection<DbTracker> Trackers { get; set; } = new List<DbTracker>();
-        public ICollection<DbLocation> Locations { get; set; } = new List<DbLocation>();
     }
 }

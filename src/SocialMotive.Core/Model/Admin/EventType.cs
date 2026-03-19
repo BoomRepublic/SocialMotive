@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for EventType management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminEventType")]
     public class EventType
     {
         public int EventTypeId { get; set; }
@@ -19,9 +21,13 @@ namespace SocialMotive.Core.Model.Admin
         [StringLength(50)]
         public string? Icon { get; set; }
 
-        [StringLength(7)]
+        [StringLength(50)]
         [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Invalid hex color code")]
-        public string? Color { get; set; }
+        public string? ColorHex { get; set; }
+
+        [StringLength(50)]
+        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Invalid hex color code")]
+        public string? BgColorHex { get; set; }
 
         public DateTime Created { get; set; }
     }

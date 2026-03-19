@@ -5,6 +5,7 @@ namespace SocialMotive.Core.Data
         public int LabelId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? ColorHex { get; set; }
+        public string? BgColorHex { get; set; }
         public string? IconType { get; set; }
         public string? LabelType { get; set; }
         public bool Publish { get; set; }

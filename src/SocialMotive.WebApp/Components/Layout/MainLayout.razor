@@ -58,6 +58,9 @@
     {
         <div class="main-content-wrapper sidebar-layout">
             <nav class="sidebar">
+                @if (!ShowAdminMenu && !ShowGeneratorMenu)
+                {
+
                 <TelerikMenu Data="@MenuData"
                              TextField="Text"
                              UrlField="Url"
@@ -67,6 +70,31 @@
                              OnClick="@((NavItem item) => OnMenuItemClick(item))"
                              Class="mainlayout-menu">
                 </TelerikMenu>
+                }
+                @if (ShowAdminMenu)
+                {
+                    <TelerikMenu Data="@AdminMenuData"
+                                 TextField="Text"
+                                 UrlField="Url"
+                                 IconField="Icon"
+                                 ItemsField="Children"
+                                 Orientation="@MenuOrientation.Vertical"
+                                 OnClick="@((NavItem item) => OnMenuItemClick(item))"
+                                 Class="mainlayout-menu">
+                    </TelerikMenu>
+                }
+                @if (ShowGeneratorMenu)
+                {
+                    <TelerikMenu Data="@GeneratorNavItems"
+                                 TextField="Text"
+                                 UrlField="Url"
+                                 IconField="Icon"
+                                 ItemsField="Children"
+                                 Orientation="@MenuOrientation.Vertical"
+                                 OnClick="@((NavItem item) => OnMenuItemClick(item))"
+                                 Class="mainlayout-menu">
+                    </TelerikMenu>
+                }
             </nav>
             <main>
                 @Body
@@ -84,6 +112,28 @@
                          OnClick="@((NavItem item) => OnMenuItemClick(item))"
                          Class="mainlayout-menu">
             </TelerikMenu>
+            @if (ShowAdminMenu)
+            {
+                <TelerikMenu Data="@AdminMenuData"
+                             TextField="Text"
+                             UrlField="Url"
+                             IconField="Icon"
+                             ItemsField="Children"
+                             OnClick="@((NavItem item) => OnMenuItemClick(item))"
+                             Class="mainlayout-menu">
+                </TelerikMenu>
+            }
+            @if (ShowGeneratorMenu)
+            {
+                <TelerikMenu Data="@GeneratorNavItems"
+                             TextField="Text"
+                             UrlField="Url"
+                             IconField="Icon"
+                             ItemsField="Children"
+                             OnClick="@((NavItem item) => OnMenuItemClick(item))"
+                             Class="mainlayout-menu">
+                </TelerikMenu>
+            }
             <main>
                 @Body
             </main>
@@ -115,12 +165,17 @@
     private bool IsAdmin { get; set; }
     private string SelectedTheme { get; set; } = AppThemes.DefaultTheme;
 
+    private string CurrentPath => new Uri(NavManager.Uri).AbsolutePath.TrimEnd('/');
+    private bool ShowAdminMenu => CurrentPath.StartsWith("/admin", StringComparison.OrdinalIgnoreCase) && !CurrentPath.StartsWith("/admin/generator", StringComparison.OrdinalIgnoreCase);
+    private bool ShowGeneratorMenu => CurrentPath.StartsWith("/admin/generator", StringComparison.OrdinalIgnoreCase);
+
     private static IReadOnlyList<AppTheme> ThemeOptions => AppThemes.All;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadAuthenticationState();
         AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        NavManager.LocationChanged += OnLocationChanged;
     }
 
     private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
@@ -195,44 +250,46 @@
         NavManager.NavigateTo("/api/auth/demo-logout", forceLoad: true);
     }
 
-    private IEnumerable<NavItem> MenuData => IsAdmin ? AllNavItems : AllNavItems.Where(x => x.Text != "Admin");
+    private IEnumerable<NavItem> MenuData => PublicNavItems;
+    private IEnumerable<NavItem> AdminMenuData => AdminNavItems;
+    private IEnumerable<NavItem> GeneratorMenuData => GeneratorNavItems;
 
-    private static readonly List<NavItem> AllNavItems = new()
+    private static readonly List<NavItem> PublicNavItems = new()
     {
         new NavItem("Home", FontIcon.Home, "/"),
-                new NavItem("Admin", FontIcon.Gear, "/admin", new List<NavItem>()
-        {
-                        new NavItem("Dashboard", FontIcon.Home, "/admin"),
-                        new NavItem("Events", FontIcon.Calendar, "/admin/events"),
-                        new NavItem("Invites", FontIcon.Plus, "/admin/invites"),
-                        new NavItem("Locations", FontIcon.Home, "/admin/locations"),
-                        new NavItem("Organizations", FontIcon.User, "/admin/organizations"),
-                        new NavItem("Trackers", FontIcon.Heart, "/admin/trackers"),
-                        new NavItem("Users", FontIcon.User, "/admin/users"),
-                    new NavItem("Generator", FontIcon.Gear, null, new List<NavItem>()
-            {
-                                new NavItem("Assets", FontIcon.Plus, "/admin/generator/assets"),
-                                new NavItem("Layers", FontIcon.Gear, "/admin/generator/layers"),
-                                new NavItem("Render Jobs", FontIcon.Wrench, "/admin/generator/renderjobs"),
-                                new NavItem("Templates", FontIcon.InfoCircle, "/admin/generator/templates")
-            }),
-        
-                new NavItem("Advanced", FontIcon.Gear, null, new List<NavItem>()
-                {
-                    new NavItem("Cities", FontIcon.Home, "/admin/cities"),
-                    new NavItem("Event Types", FontIcon.Calendar, "/admin/event-types"),
-                    new NavItem("Groups", FontIcon.User, "/admin/groups"),
-                    new NavItem("Labels", FontIcon.InfoCircle, "/admin/labels"),
-                    new NavItem("Settings", FontIcon.Gear, "/admin/settings"),
-                }),
-                new NavItem("Tools", FontIcon.Wrench, null, new List<NavItem>()
-                {
-                    new NavItem("Import Data", FontIcon.Upload, "/admin/tools/import")
-                })
-          
-        }),
-                        new NavItem("Over ons", FontIcon.InfoCircle, "/about")
+        new NavItem("Over ons", FontIcon.InfoCircle, "/about"),
+        new NavItem("Admin", FontIcon.Gear, "/admin"),
+        new NavItem("Generator", FontIcon.Gear, "/admin/generator/templates"),
+    };
 
+    private static readonly List<NavItem> AdminNavItems = new()
+    {
+        new NavItem("Admin Dashboard", FontIcon.Gear, "/admin"),
+        new NavItem("Events", FontIcon.Calendar, "/admin/events"),
+        new NavItem("Event Tasks", FontIcon.Calendar, "/admin/event-tasks"),
+        new NavItem("Event Types", FontIcon.Calendar, "/admin/event-types"),
+        new NavItem("Invites", FontIcon.Plus, "/admin/invites"),
+        new NavItem("Locations", FontIcon.Home, "/admin/locations"),
+        new NavItem("Organizations", FontIcon.User, "/admin/organizations"),
+        new NavItem("Trackers", FontIcon.Heart, "/admin/trackers"),
+        new NavItem("Users", FontIcon.User, "/admin/users"),
+        new NavItem("Groups", FontIcon.User, "/admin/groups"),
+        new NavItem("Labels", FontIcon.InfoCircle, "/admin/labels"),
+        new NavItem("Cities", FontIcon.Home, "/admin/cities"),
+        new NavItem("Settings", FontIcon.Gear, "/admin/settings"),
+        new NavItem("Tools", FontIcon.Wrench, null, new List<NavItem>()
+        {
+            new NavItem("Import Data", FontIcon.Upload, "/admin/tools/import")
+        }),
+    };
+
+    private static readonly List<NavItem> GeneratorNavItems = new()
+    {
+        new NavItem("Assets", FontIcon.Gear, "/admin/generator/"),
+        new NavItem("Assets", FontIcon.FileImage, "/admin/generator/assets"),
+        new NavItem("Layers", FontIcon.Layout, "/admin/generator/layers"),
+        new NavItem("Render Jobs", FontIcon.Wrench, "/admin/generator/renderjobs"),
+        new NavItem("Templates", FontIcon.TemplateManager, "/admin/generator/templates")
     };
 
     private bool LargeScreen { get; set; } = true;
@@ -256,12 +313,18 @@
         base.OnInitialized();
     }
 
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
     public void Dispose()
     {
         if (AuthStateProvider != null)
         {
             AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         }
+        NavManager.LocationChanged -= OnLocationChanged;
     }
 
     public class NavItem

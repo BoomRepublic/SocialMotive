@@ -27,10 +27,12 @@
         <GridColumns>
             <GridColumn Field="@nameof(AdminEventTask.EventTaskId)" Title="ID" Width="80px" Editable="false" />
             <GridColumn Field="@nameof(AdminEventTask.EventId)" Title="Event ID" Width="100px" />
+            <GridColumn Field="@nameof(AdminEventTask.EventSkillId)" Title="Skill ID" Width="100px" />
             <GridColumn Field="@nameof(AdminEventTask.Name)" Title="Name" />
             <GridColumn Field="@nameof(AdminEventTask.Difficulty)" Title="Difficulty" Width="110px" />
             <GridColumn Field="@nameof(AdminEventTask.Required)" Title="Required" Width="100px" />
             <GridColumn Field="@nameof(AdminEventTask.MaxParticipants)" Title="Max" Width="80px" />
+            <GridColumn Field="@nameof(AdminEventTask.MinParticipants)" Title="Min" Width="80px" />
             <GridColumn Field="@nameof(AdminEventTask.HoursEstimate)" Title="Hours Est." Width="110px" />
             <GridColumn Field="@nameof(AdminEventTask.OrderIndex)" Title="Order" Width="80px" />
             <GridCommandColumn Width="100px">

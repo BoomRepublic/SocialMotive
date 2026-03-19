@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for Label management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminLabel")]
     public class Label
     {
         public int LabelId { get; set; }
@@ -13,9 +15,10 @@ namespace SocialMotive.Core.Model.Admin
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
-        [StringLength(7)]
-        [RegularExpression("^#[0-9A-Fa-f]{6}$", ErrorMessage = "Invalid hex color code")]
+        [StringLength(50)]
         public string? ColorHex { get; set; }
+        [StringLength(50)]
+        public string? BgColorHex { get; set; }
 
         [StringLength(50)]
         public string? IconType { get; set; }

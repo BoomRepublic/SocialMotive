@@ -1,0 +1,79 @@
+@page "/admin/event-skills"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Admin
+@using AdminEventSkill = SocialMotive.Core.Model.Admin.EventSkill
+@attribute [Authorize(Roles = "Admin")]
+@inject AdminApiService Api
+
+<PageTitle>Admin - Event Skills</PageTitle>
+
+<div class="admin-container">
+    <div class="page-header">
+        <h1>Event Skills</h1>
+        <p class="text-muted">Manage event skill categories</p>
+    </div>
+
+    <TelerikGrid Data="@_items"
+                 OnDelete="@OnDelete"
+                 Pageable="true"
+                 PageSize="25"
+                 Sortable="true"
+                 FilterMode="@GridFilterMode.FilterRow">
+        <GridToolBarTemplate>
+            <a href="/admin/event-skill/0" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-primary">
+                New Event Skill
+            </a>
+        </GridToolBarTemplate>
+        <GridColumns>
+            <GridColumn Field="@nameof(AdminEventSkill.EventSkillId)" Title="ID" Width="80px" Editable="false" />
+            <GridColumn Field="@nameof(AdminEventSkill.Name)" Title="Name">
+                <Template Context="rowItem">
+                    @{
+                        var item = (AdminEventSkill)rowItem;
+                    }
+                    @if (!string.IsNullOrEmpty(item.ColorHex) || !string.IsNullOrEmpty(item.BgColorHex))
+                    {
+                        <span class="badge" style="color: @(item.ColorHex); background-color: @(item.BgColorHex);">@item.Name</span>
+                    }
+                    else
+                    {
+                        @item.Name
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="@nameof(AdminEventSkill.Difficulty)" Title="Difficulty" Width="110px" />
+            <GridColumn Field="@nameof(AdminEventSkill.ColorHex)" Title="Color" Width="100px" />
+            <GridColumn Field="@nameof(AdminEventSkill.BgColorHex)" Title="BG Color" Width="100px" />
+            <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
+                <Template Context="rowItem">
+                    @{
+                        var item = (AdminEventSkill)rowItem;
+                    }
+                    <a href="@($"/admin/event-skill/{item.EventSkillId}")" class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base">
+                        Edit
+                    </a>
+                </Template>
+            </GridColumn>
+            <GridCommandColumn Width="60px">
+                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" ThemeColor="@ThemeConstants.Button.ThemeColor.Error" />
+            </GridCommandColumn>
+        </GridColumns>
+    </TelerikGrid>
+</div>
+
+@code {
+    private List<AdminEventSkill> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Api.GetEventSkillsAsync();
+    }
+
+    private async Task OnDelete(GridCommandEventArgs args)
+    {
+        var item = (AdminEventSkill)args.Item;
+        await Api.DeleteEventSkillAsync(item.EventSkillId);
+        _items = await Api.GetEventSkillsAsync();
+    }
+}

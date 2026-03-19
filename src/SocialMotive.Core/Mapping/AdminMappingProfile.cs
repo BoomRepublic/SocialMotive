@@ -114,6 +114,15 @@ namespace SocialMotive.Core.Mapping
 
             #endregion
 
+            #region EventSkill
+
+            CreateMap<DbEventSkill, EventSkill>();
+
+            CreateMap<EventSkill, DbEventSkill>()
+                .ForMember(d => d.EventTasks, opt => opt.Ignore());
+
+            #endregion
+
             #region Invite
 
             CreateMap<DbInvite, Invite>();
@@ -140,8 +149,7 @@ namespace SocialMotive.Core.Mapping
             CreateMap<DbCity, City>();
 
             CreateMap<City, DbCity>()
-                .ForMember(d => d.Trackers, opt => opt.Ignore())
-                .ForMember(d => d.Locations, opt => opt.Ignore());
+                .ForMember(d => d.Trackers, opt => opt.Ignore());
 
             #endregion
 
@@ -182,18 +190,72 @@ namespace SocialMotive.Core.Mapping
                 .ForMember(d => d.CreatedAt, opt => opt.Ignore())
                 .ForMember(d => d.UpdatedAt, opt => opt.Ignore())
                 .ForMember(d => d.Event, opt => opt.Ignore())
+                .ForMember(d => d.EventSkill, opt => opt.Ignore())
                 .ForMember(d => d.Assignments, opt => opt.Ignore());
 
             #endregion
 
             #region UserSocialAccount
 
-            CreateMap<DbUserSocialAccount, UserSocialAccount>();
+            CreateMap<DbUserSocialAccount, UserSocialAccount>()
+                .ForMember(d => d.SocialPlatformName, opt => opt.MapFrom(s => s.SocialPlatform != null ? s.SocialPlatform.Name : null));
 
             CreateMap<UserSocialAccount, DbUserSocialAccount>()
                 .ForMember(d => d.Created, opt => opt.Ignore())
                 .ForMember(d => d.Modified, opt => opt.Ignore())
-                .ForMember(d => d.User, opt => opt.Ignore());
+                .ForMember(d => d.User, opt => opt.Ignore())
+                .ForMember(d => d.SocialPlatform, opt => opt.Ignore());
+
+            #endregion
+
+            #region Role
+
+            CreateMap<DbRole, Role>();
+
+            CreateMap<Role, DbRole>()
+                .ForMember(d => d.UserRoles, opt => opt.Ignore());
+
+            #endregion
+
+            #region UserRole
+
+            CreateMap<DbUserRole, UserRole>()
+                .ForMember(d => d.RoleName, opt => opt.MapFrom(s => s.Role != null ? s.Role.Name : null));
+
+            CreateMap<UserRole, DbUserRole>()
+                .ForMember(d => d.User, opt => opt.Ignore())
+                .ForMember(d => d.Role, opt => opt.Ignore());
+
+            #endregion
+
+            #region UserGroup
+
+            CreateMap<DbUserGroup, UserGroup>()
+                .ForMember(d => d.GroupName, opt => opt.MapFrom(s => s.Group != null ? s.Group.Name : null));
+
+            CreateMap<UserGroup, DbUserGroup>()
+                .ForMember(d => d.User, opt => opt.Ignore())
+                .ForMember(d => d.Group, opt => opt.Ignore());
+
+            #endregion
+
+            #region UserLabel
+
+            CreateMap<DbUserLabel, UserLabel>()
+                .ForMember(d => d.LabelName, opt => opt.MapFrom(s => s.Label != null ? s.Label.Name : null));
+
+            CreateMap<UserLabel, DbUserLabel>()
+                .ForMember(d => d.User, opt => opt.Ignore())
+                .ForMember(d => d.Label, opt => opt.Ignore());
+
+            #endregion
+
+            #region SocialPlatform
+
+            CreateMap<DbSocialPlatform, SocialPlatform>();
+
+            CreateMap<SocialPlatform, DbSocialPlatform>()
+                .ForMember(d => d.UserSocialAccounts, opt => opt.Ignore());
 
             #endregion
 

@@ -1,0 +1,122 @@
+@page "/volunteer/dashboard"
+@layout MainLayout
+@using Microsoft.AspNetCore.Authorization
+@using SocialMotive.Core.Model.Volunteer
+@using SocialMotive.Core.Services
+@attribute [Authorize(Roles = "Volunteer,Organizer,Admin")]
+@inject VolunteerApiService VolunteerApi
+@inject NavigationManager Navigation
+
+<PageTitle>Volunteer Dashboard</PageTitle>
+
+<div class="volunteer-dashboard">
+    <div class="page-header">
+        <h1>My Dashboard</h1>
+        <p class="text-muted">Welcome back@(_profile != null ? $", {_profile.FirstName}" : "")!</p>
+    </div>
+
+    <TelerikTabStrip>
+        <TabStripTab Title="Overview">
+            <div class="dashboard-grid">
+                <div class="dashboard-section">
+                    <h3>Telegram Integration</h3>
+                    <p class="text-muted">Link your Telegram account to share your live location during events.</p>
+                    <TelegramLink />
+                </div>
+            </div>
+        </TabStripTab>
+
+        <TabStripTab Title="My Events">
+            @if (_participations == null)
+            {
+                <TelerikLoaderContainer Visible="true" Text="Loading events..." />
+            }
+            else if (!_participations.Any())
+            {
+                <div class="k-messagebox k-messagebox-info">
+                    You haven't joined any events yet. Browse available events to get started!
+                </div>
+            }
+            else
+            {
+                <TelerikGrid Data="@_participations" Pageable="true" PageSize="10" Sortable="true">
+                    <GridColumns>
+                        <GridColumn Field="@nameof(Participation.EventTitle)" Title="Event" />
+                        <GridColumn Field="@nameof(Participation.Status)" Title="Status" Width="120px" />
+                        <GridColumn Field="@nameof(Participation.JoinedAt)" Title="Joined" Width="160px" DisplayFormat="{0:yyyy-MM-dd}" />
+                        <GridColumn Field="@nameof(Participation.HoursWorked)" Title="Hours" Width="100px" />
+                        <GridColumn Field="@nameof(Participation.Rating)" Title="Rating" Width="100px" />
+                    </GridColumns>
+                </TelerikGrid>
+            }
+        </TabStripTab>
+
+        <TabStripTab Title="My Tasks">
+            @if (_assignments == null)
+            {
+                <TelerikLoaderContainer Visible="true" Text="Loading tasks..." />
+            }
+            else if (!_assignments.Any())
+            {
+                <div class="k-messagebox k-messagebox-info">
+                    You haven't signed up for any tasks yet.
+                </div>
+            }
+            else
+            {
+                <TelerikGrid Data="@_assignments" Pageable="true" PageSize="10" Sortable="true">
+                    <GridColumns>
+                        <GridColumn Field="@nameof(TaskAssignment.TaskTitle)" Title="Task" />
+                        <GridColumn Field="@nameof(TaskAssignment.StartTime)" Title="Start" Width="160px" DisplayFormat="{0:yyyy-MM-dd HH:mm}" />
+                        <GridColumn Field="@nameof(TaskAssignment.EndTime)" Title="End" Width="160px" DisplayFormat="{0:yyyy-MM-dd HH:mm}" />
+                        <GridColumn Field="@nameof(TaskAssignment.Notes)" Title="Notes" />
+                    </GridColumns>
+                </TelerikGrid>
+            }
+        </TabStripTab>
+    </TelerikTabStrip>
+</div>
+
+@code {
+    private Profile? _profile;
+    private List<Participation>? _participations;
+    private List<TaskAssignment>? _assignments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _profile = await VolunteerApi.GetProfileAsync();
+        _participations = await VolunteerApi.GetParticipationsAsync();
+        _assignments = await VolunteerApi.GetTaskAssignmentsAsync();
+    }
+}
+
+<style>
+    .volunteer-dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    .page-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .page-header h1 {
+        margin-bottom: 0.25rem;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .dashboard-section h3 {
+        margin-top: 0;
+        margin-bottom: 0.25rem;
+    }
+
+    .dashboard-section > .text-muted {
+        margin-bottom: 1rem;
+    }
+</style>

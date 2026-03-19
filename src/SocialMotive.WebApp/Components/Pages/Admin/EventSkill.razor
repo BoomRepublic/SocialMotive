@@ -1,23 +1,23 @@
-@page "/admin/organization-role/{OrganizationRoleId:int}"
+@page "/admin/event-skill/{EventSkillId:int}"
 @layout MainLayout
 @using Microsoft.AspNetCore.Authorization
 @using SocialMotive.Core.Model.Admin
-@using AdminOrganizationRole = SocialMotive.Core.Model.Admin.OrganizationRole
+@using AdminEventSkill = SocialMotive.Core.Model.Admin.EventSkill
 @attribute [Authorize(Roles = "Admin")]
 @inject AdminApiService Api
 @inject NavigationManager Navigation
 
-<PageTitle>Admin - @PageMode Organization Role</PageTitle>
+<PageTitle>Admin - @PageMode Event Skill</PageTitle>
 
 <div class="admin-container">
     <div class="page-header">
-        <h1>@PageMode Organization Role</h1>
-        <p class="text-muted">@(IsCreateMode ? "Create a new organization role" : $"Organization Role ID: {OrganizationRoleId}")</p>
+        <h1>@PageMode Event Skill</h1>
+        <p class="text-muted">@(IsCreateMode ? "Create a new event skill" : $"Event Skill ID: {EventSkillId}")</p>
     </div>
 
     @if (_item == null)
     {
-        <TelerikLoaderContainer Visible="true" Text="Loading organization role..." />
+        <TelerikLoaderContainer Visible="true" Text="Loading event skill..." />
     }
     else
     {
@@ -31,10 +31,13 @@
                             <label class="field-label">Name</label>
                             <TelerikTextBox @bind-Value="@_item.Name" />
 
-                            <label class="field-label">Color Hex</label>
+                            <label class="field-label">Difficulty</label>
+                            <TelerikNumericTextBox @bind-Value="@_item.Difficulty" />
+
+                            <label class="field-label">Color</label>
                             <TelerikColorPicker @bind-Value="@_item.ColorHex" />
 
-                            <label class="field-label">BG Color Hex</label>
+                            <label class="field-label">BG Color</label>
                             <TelerikColorPicker @bind-Value="@_item.BgColorHex" />
                         </div>
                     </Template>
@@ -42,7 +45,7 @@
             </FormItems>
             <FormButtons>
                 <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
-                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/organization-roles"))">Cancel</TelerikButton>
+                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/event-skills"))">Cancel</TelerikButton>
             </FormButtons>
         </TelerikForm>
 
@@ -54,38 +57,38 @@
 </div>
 
 @code {
-    [Parameter] public int OrganizationRoleId { get; set; }
+    [Parameter] public int EventSkillId { get; set; }
 
-    private AdminOrganizationRole? _item;
+    private AdminEventSkill? _item;
     private string? _errorMessage;
-    private bool IsCreateMode => OrganizationRoleId == 0;
+    private bool IsCreateMode => EventSkillId == 0;
     private string PageMode => IsCreateMode ? "Create" : "Edit";
 
     protected override async Task OnInitializedAsync()
     {
         if (IsCreateMode)
         {
-            _item = new AdminOrganizationRole();
+            _item = new AdminEventSkill();
             return;
         }
 
-        _item = await Api.GetOrganizationRoleAsync(OrganizationRoleId);
+        _item = await Api.GetEventSkillAsync(EventSkillId);
     }
 
     private async Task HandleValidSubmit()
     {
         if (_item == null) return;
 
-        AdminOrganizationRole? result;
+        AdminEventSkill? result;
         if (IsCreateMode)
-            result = await Api.CreateOrganizationRoleAsync(_item);
+            result = await Api.CreateEventSkillAsync(_item);
         else
-            result = await Api.UpdateOrganizationRoleAsync(OrganizationRoleId, _item);
+            result = await Api.UpdateEventSkillAsync(EventSkillId, _item);
 
         if (result != null)
-            Navigation.NavigateTo("/admin/organization-roles");
+            Navigation.NavigateTo("/admin/event-skills");
         else
-            _errorMessage = "Failed to save organization role. Please try again.";
+            _errorMessage = "Failed to save event skill. Please try again.";
     }
 }
 

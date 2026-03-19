@@ -20,44 +20,58 @@
     }
     else
     {
-        <TelerikForm Model="@_item"
-                     OnValidSubmit="@HandleValidSubmit"
-                     ValidationMessageType="@FormValidationMessageType.Tooltip">
-            <FormItems>
-                <FormItem ColSpan="2">
-                    <Template>
-                        <div class="field-grid">
-                            <label class="field-label">Name</label>
-                            <TelerikTextBox @bind-Value="@_item.Name" />
+        <TelerikTabStrip>
+            <TabStripTab Title="Edit">
+                <TelerikForm Model="@_item"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormItems>
+                        <FormItem ColSpan="2">
+                            <Template>
+                                <div class="field-grid">
+                                    <label class="field-label">Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.Name" />
 
-                            <label class="field-label">Description</label>
-                            <TelerikTextBox @bind-Value="@_item.Description" />
+                                    <label class="field-label">Description</label>
+                                    <TelerikTextBox @bind-Value="@_item.Description" />
 
-                            <label class="field-label">Notes</label>
-                            <TelerikTextBox @bind-Value="@_item.Notes" />
+                                    <label class="field-label">Notes</label>
+                                    <TelerikTextBox @bind-Value="@_item.Notes" />
 
-                            <label class="field-label">Invite Type</label>
-                            <TelerikTextBox @bind-Value="@_item.InviteType" />
+                                    <label class="field-label">Invite Type</label>
+                                    <TelerikTextBox @bind-Value="@_item.InviteType" />
 
-                            <label class="field-label">Created By Tracker ID</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.CreatedByTrackerId" />
+                                    <label class="field-label">Created By Tracker ID</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.CreatedByTrackerId" />
 
-                            <label class="field-label">Claimed By Tracker ID</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.ClaimedByTrackerId" />
-                        </div>
-                    </Template>
-                </FormItem>
-            </FormItems>
-            <FormButtons>
-                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
-                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/invites"))">Cancel</TelerikButton>
-            </FormButtons>
-        </TelerikForm>
+                                    <label class="field-label">Claimed By Tracker ID</label>
+                                    <TelerikNumericTextBox @bind-Value="@_item.ClaimedByTrackerId" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                        <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/invites"))">Cancel</TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
 
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
-        }
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+                }
+            </TabStripTab>
+
+            @if (!IsCreateMode)
+            {
+                <TabStripTab Title="Details">
+                    <div class="field-grid">
+                        <label class="field-label">Created At</label>
+                        <span>@(_item.CreatedAt?.ToString("g") ?? "—")</span>
+                    </div>
+                </TabStripTab>
+            }
+        </TelerikTabStrip>
     }
 </div>
 

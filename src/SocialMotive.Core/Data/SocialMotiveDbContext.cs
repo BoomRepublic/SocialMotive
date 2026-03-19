@@ -18,6 +18,7 @@ namespace SocialMotive.Core.Data
         public DbSet<DbEvent> Events { get; set; } = null!;
         public DbSet<DbEventType> EventTypes { get; set; } = null!;
         public DbSet<DbEventTask> EventTasks { get; set; } = null!;
+        public DbSet<DbEventSkill> EventSkills { get; set; } = null!;
         public DbSet<DbEventParticipant> EventParticipants { get; set; } = null!;
         public DbSet<DbEventTaskAssignment> EventTaskAssignments { get; set; } = null!;
         public DbSet<DbGroup> Groups { get; set; } = null!;
@@ -30,6 +31,7 @@ namespace SocialMotive.Core.Data
         public DbSet<DbSetting> Settings { get; set; } = null!;
         public DbSet<DbRole> Roles { get; set; } = null!;
         public DbSet<DbUserSocialAccount> UserSocialAccounts { get; set; } = null!;
+        public DbSet<DbSocialPlatform> SocialPlatforms { get; set; } = null!;
         public DbSet<DbUserGroup> UserGroups { get; set; } = null!;
         public DbSet<DbUserLabel> UserLabels { get; set; } = null!;
         public DbSet<DbUserRole> UserRoles { get; set; } = null!;
@@ -63,6 +65,9 @@ namespace SocialMotive.Core.Data
 
             modelBuilder.Entity<DbEventTask>()
                 .HasKey(et => et.EventTaskId);
+
+            modelBuilder.Entity<DbEventSkill>()
+                .HasKey(es => es.EventSkillId);
 
             modelBuilder.Entity<DbEventParticipant>()
                 .HasKey(ep => ep.EventParticipantId);
@@ -99,6 +104,9 @@ namespace SocialMotive.Core.Data
 
             modelBuilder.Entity<DbUserSocialAccount>()
                 .HasKey(ua => ua.UserSocialAccountId);
+
+            modelBuilder.Entity<DbSocialPlatform>()
+                .HasKey(sp => sp.SocialPlatformId);
 
             modelBuilder.Entity<DbUserGroup>()
                 .HasKey(ug => ug.UserGroupId);
@@ -175,6 +183,13 @@ namespace SocialMotive.Core.Data
                 .WithMany(e => e.EventTasks)
                 .HasForeignKey(et => et.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // EventSkill ← EventTask
+            modelBuilder.Entity<DbEventTask>()
+                .HasOne(et => et.EventSkill)
+                .WithMany(es => es.EventTasks)
+                .HasForeignKey(et => et.EventSkillId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Event ← EventParticipant
             modelBuilder.Entity<DbEventParticipant>()
@@ -258,6 +273,13 @@ namespace SocialMotive.Core.Data
                 .HasOne(ua => ua.User)
                 .WithMany(u => u.SocialAccounts)
                 .HasForeignKey(ua => ua.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // SocialPlatform ← UserSocialAccount
+            modelBuilder.Entity<DbUserSocialAccount>()
+                .HasOne(ua => ua.SocialPlatform)
+                .WithMany(sp => sp.UserSocialAccounts)
+                .HasForeignKey(ua => ua.SocialPlatformId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // User ← UserGroup
@@ -394,6 +416,7 @@ namespace SocialMotive.Core.Data
             modelBuilder.Entity<DbEventType>().ToTable("EventTypes");
             modelBuilder.Entity<DbEventTask>().ToTable("EventTasks");
             modelBuilder.Entity<DbEventParticipant>().ToTable("EventParticipants");
+            modelBuilder.Entity<DbEventSkill>().ToTable("EventSkills");
             modelBuilder.Entity<DbEventTaskAssignment>().ToTable("EventTaskAssignments");
             modelBuilder.Entity<DbGroup>().ToTable("Groups");
             modelBuilder.Entity<DbLabel>().ToTable("Labels");
@@ -405,6 +428,7 @@ namespace SocialMotive.Core.Data
             modelBuilder.Entity<DbSetting>().ToTable("Settings");
             modelBuilder.Entity<DbRole>().ToTable("Roles");
             modelBuilder.Entity<DbUserSocialAccount>().ToTable("UserSocialAccounts");
+            modelBuilder.Entity<DbSocialPlatform>().ToTable("SocialPlatforms");
             modelBuilder.Entity<DbUserGroup>().ToTable("UserGroups");
             modelBuilder.Entity<DbUserLabel>().ToTable("UserLabels");
             modelBuilder.Entity<DbUserRole>().ToTable("UserRoles");
@@ -501,6 +525,9 @@ namespace SocialMotive.Core.Data
 
             modelBuilder.Entity<DbUserSocialAccount>()
                 .HasIndex(ua => ua.UserId);
+
+            modelBuilder.Entity<DbUserSocialAccount>()
+                .HasIndex(ua => ua.SocialPlatformId);
         }
     }
 }

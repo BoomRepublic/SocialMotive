@@ -3,6 +3,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using SocialMotive.Core.Model.Admin
 @using _Tracker = SocialMotive.Core.Model.Admin.Tracker
+@using _TrackerRole = SocialMotive.Core.Model.Admin.TrackerRole
+@using AdminGroup = SocialMotive.Core.Model.Admin.Group
+@using AdminCity = SocialMotive.Core.Model.Admin.City
 @attribute [Authorize(Roles = "Admin")]
 @inject AdminApiService Api
 @inject NavigationManager Navigation
@@ -21,47 +24,105 @@
     }
     else
     {
-        <TelerikForm Model="@_item"
-                     OnValidSubmit="@HandleValidSubmit"
-                     ValidationMessageType="@FormValidationMessageType.Tooltip">
-            <FormItems>
-                <FormItem ColSpan="2">
-                    <Template>
-                        <div class="field-grid">
-                            <label class="field-label">Display Name</label>
-                            <TelerikTextBox @bind-Value="@_item.DisplayName" />
+        <TelerikTabStrip>
+            <TabStripTab Title="Edit">
+                <TelerikForm Model="@_item"
+                             OnValidSubmit="@HandleValidSubmit"
+                             ValidationMessageType="@FormValidationMessageType.Tooltip">
+                    <FormItems>
+                        <FormItem ColSpan="2">
+                            <Template>
+                                <div class="field-grid">
+                                    <label class="field-label">Display Name</label>
+                                    <TelerikTextBox @bind-Value="@_item.DisplayName" />
 
-                            <label class="field-label">Email</label>
-                            <TelerikTextBox @bind-Value="@_item.Email" />
+                                    <label class="field-label">Email</label>
+                                    <TelerikTextBox @bind-Value="@_item.Email" />
 
-                            <label class="field-label">Mobile</label>
-                            <TelerikTextBox @bind-Value="@_item.Mobile" />
+                                    <label class="field-label">Mobile</label>
+                                    <TelerikTextBox @bind-Value="@_item.Mobile" />
 
-                            <label class="field-label">Phone</label>
-                            <TelerikTextBox @bind-Value="@_item.Phone" />
+                                    <label class="field-label">Phone</label>
+                                    <TelerikTextBox @bind-Value="@_item.Phone" />
 
-                            <label class="field-label">Group ID</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.GroupId" />
+                                    <label class="field-label">Group</label>
+                                    <TelerikComboBox Data="@_groups"
+                                                     TextField="Name"
+                                                     ValueField="GroupId"
+                                                     @bind-Value="@_item.GroupId"
+                                                     TValue="int?"
+                                                     TItem="AdminGroup"
+                                                     Filterable="true"
+                                                     Placeholder="-- Select group --" />
 
-                            <label class="field-label">City ID</label>
-                            <TelerikNumericTextBox @bind-Value="@_item.CityId" />
+                                    <label class="field-label">City</label>
+                                    <TelerikComboBox Data="@_cities"
+                                                     TextField="Name"
+                                                     ValueField="CityId"
+                                                     @bind-Value="@_item.CityId"
+                                                     TValue="int?"
+                                                     TItem="AdminCity"
+                                                     Filterable="true"
+                                                     Placeholder="-- Select city --" />
 
-                            <label class="field-label">Is Admin</label>
-                            <TelerikCheckBox @bind-Value="@_isAdmin" />
-                        </div>
-                    </Template>
-                </FormItem>
-            </FormItems>
-            <FormButtons>
-                <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
-                <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/trackers"))">Cancel</TelerikButton>
-            </FormButtons>
-        </TelerikForm>
+                                    <label class="field-label">Is Admin</label>
+                                    <TelerikCheckBox @bind-Value="@_isAdmin" />
+                                </div>
+                            </Template>
+                        </FormItem>
+                    </FormItems>
+                    <FormButtons>
+                        <TelerikButton ThemeColor="@ThemeConstants.Button.ThemeColor.Primary" ButtonType="@ButtonType.Submit">Save</TelerikButton>
+                        <TelerikButton ButtonType="@ButtonType.Button" OnClick="@(() => Navigation.NavigateTo("/admin/trackers"))">Cancel</TelerikButton>
+                    </FormButtons>
+                </TelerikForm>
 
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
-        }
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="k-messagebox k-messagebox-error k-mt-4">@_errorMessage</div>
+                }
+            </TabStripTab>
+
+            @if (!IsCreateMode)
+            {
+                <TabStripTab Title="Details">
+                    <div class="field-grid">
+                        <label class="field-label">Created At</label>
+                        <span>@_item.CreatedAt.ToString("g")</span>
+
+                        <label class="field-label">Modified At</label>
+                        <span>@_item.ModifiedAt.ToString("g")</span>
+                    </div>
+                </TabStripTab>
+
+                <TabStripTab Title="Roles">
+                    <TelerikGrid Data="@_trackerRoles"
+                                 EditMode="@GridEditMode.Inline"
+                                 OnCreate="@OnRoleCreate"
+                                 OnUpdate="@OnRoleUpdate"
+                                 OnDelete="@OnRoleDelete"
+                                 Pageable="true"
+                                 PageSize="10"
+                                 Sortable="true">
+                        <GridToolBarTemplate>
+                            <GridCommandButton Command="Add" Icon="@SvgIcon.Plus">Add Role</GridCommandButton>
+                        </GridToolBarTemplate>
+                        <GridColumns>
+                            <GridColumn Field="@nameof(_TrackerRole.TrackerRoleId)" Title="ID" Width="90px" Editable="false" />
+                            <GridColumn Field="@nameof(_TrackerRole.Name)" Title="Name" />
+                            <GridColumn Field="@nameof(_TrackerRole.Description)" Title="Description" />
+                            <GridColumn Field="@nameof(_TrackerRole.CreatedAt)" Title="Created" Width="170px" DisplayFormat="{0:g}" Editable="false" />
+                            <GridCommandColumn Width="180px">
+                                <GridCommandButton Command="Edit" Icon="@SvgIcon.Pencil" />
+                                <GridCommandButton Command="Delete" Icon="@SvgIcon.Trash" />
+                                <GridCommandButton Command="Save" ShowInEdit="true" />
+                                <GridCommandButton Command="Cancel" ShowInEdit="true" />
+                            </GridCommandColumn>
+                        </GridColumns>
+                    </TelerikGrid>
+                </TabStripTab>
+            }
+        </TelerikTabStrip>
     }
 </div>
 
@@ -69,6 +130,9 @@
     [Parameter] public int TrackerId { get; set; }
 
     private _Tracker? _item;
+    private List<_TrackerRole> _trackerRoles = new();
+    private List<AdminGroup> _groups = new();
+    private List<AdminCity> _cities = new();
     private string? _errorMessage;
     private bool _isAdmin;
     private bool IsCreateMode => TrackerId == 0;
@@ -76,14 +140,27 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var groupsTask = Api.GetGroupsAsync();
+        var citiesTask = Api.GetCitiesAsync();
+
         if (IsCreateMode)
         {
+            await Task.WhenAll(groupsTask, citiesTask);
+            _groups = (await groupsTask).OrderBy(g => g.Name).ToList();
+            _cities = (await citiesTask).OrderBy(c => c.Name).ToList();
             _item = new _Tracker();
             _isAdmin = false;
             return;
         }
 
-        _item = await Api.GetTrackerAsync(TrackerId);
+        var trackerTask = Api.GetTrackerAsync(TrackerId);
+        var rolesTask = Api.GetTrackerRolesAsync();
+        await Task.WhenAll(trackerTask, rolesTask, groupsTask, citiesTask);
+
+        _item = await trackerTask;
+        _trackerRoles = await rolesTask;
+        _groups = (await groupsTask).OrderBy(g => g.Name).ToList();
+        _cities = (await citiesTask).OrderBy(c => c.Name).ToList();
         _isAdmin = _item?.IsAdmin ?? false;
     }
 
@@ -126,6 +203,29 @@
             Navigation.NavigateTo("/admin/trackers");
         else
             _errorMessage = "Failed to save tracker. Please try again.";
+    }
+
+    private async Task OnRoleCreate(GridCommandEventArgs args)
+    {
+        var role = (_TrackerRole)args.Item;
+        var created = await Api.CreateTrackerRoleAsync(role);
+        if (created != null)
+            _trackerRoles = await Api.GetTrackerRolesAsync();
+    }
+
+    private async Task OnRoleUpdate(GridCommandEventArgs args)
+    {
+        var role = (_TrackerRole)args.Item;
+        var updated = await Api.UpdateTrackerRoleAsync(role.TrackerRoleId, role);
+        if (updated != null)
+            _trackerRoles = await Api.GetTrackerRolesAsync();
+    }
+
+    private async Task OnRoleDelete(GridCommandEventArgs args)
+    {
+        var role = (_TrackerRole)args.Item;
+        await Api.DeleteTrackerRoleAsync(role.TrackerRoleId);
+        _trackerRoles = await Api.GetTrackerRolesAsync();
     }
 }
 

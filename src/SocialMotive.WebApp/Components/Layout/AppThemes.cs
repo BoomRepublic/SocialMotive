@@ -2,7 +2,7 @@ namespace SocialMotive.WebApp.Components.Layout;
 
 public static class AppThemes
 {
-    public const string DefaultTheme = LightThemeValue;
+    public const string DefaultTheme = DarkThemeValue;
 
     public const string LightThemeValue = "light";
     public const string DarkThemeValue = "dark";
@@ -10,7 +10,11 @@ public static class AppThemes
     public static IReadOnlyList<AppTheme> All { get; } = new List<AppTheme>
     {
         new("Light", LightThemeValue, "https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-main.css"),
-        new("Dark", DarkThemeValue, "https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-main-dark.css")
+        new("Dark", DarkThemeValue, "https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-main-dark.css"),
+        new("Blue", "blue", "https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-blue.css"),
+        new("Green", "green", "https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-green.css"),
+        new("Purple", "purple", "https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-purple.css"),
+        new("Orange", "orange", "https://blazor.cdn.telerik.com/blazor/13.0.0/kendo-theme-material/swatches/material-orange.css")
     };
 
     public static AppTheme GetByValue(string? value)

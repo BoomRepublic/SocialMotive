@@ -12,8 +12,10 @@ CRUD API controllers for all admin-managed database tables. All endpoints requir
 | `AdminController.Trackers.partial.cs` | `DbTracker` → `Tracker` / `TrackerUpdateRequest` DTOs |
 | `AdminController.Events.partial.cs` | `DbEvent` → `Event` DTO |
 | `AdminController.EventTypes.partial.cs` | `DbEventType` → `EventType` DTO |
+| `AdminController.EventSkills.partial.cs` | `DbEventSkill` → `EventSkill` DTO |
 | `AdminController.Labels.partial.cs` | `DbLabel` → `Label` DTO |
 | `AdminController.UserSocialAccounts.partial.cs` | `DbUserSocialAccount` → `UserSocialAccount` DTO |
+| `AdminController.SocialPlatforms.partial.cs` | `DbSocialPlatform` → `SocialPlatform` DTO |
 | `ImportController.cs` | Bulk JSON import for any whitelisted table |
 
 ## Conventions

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
@@ -6,6 +7,7 @@ namespace SocialMotive.Core.Model.Admin
     /// DTO for updating Tracker from admin edit page
     /// Excludes read-only fields like TrackerId, CreatedAt, JoinedAt, QrGuid, InviteCode
     /// </summary>
+    [SwaggerSchema("AdminTrackerUpdateRequest")]
     public class TrackerUpdateRequest
     {
         [Required(ErrorMessage = "Display name is required")]

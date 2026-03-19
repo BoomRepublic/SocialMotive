@@ -27,7 +27,12 @@
         </GridToolBarTemplate>
         <GridColumns>
             <GridColumn Field="@nameof(AdminLabel.LabelId)" Title="ID" Width="80px" Editable="false" />
-            <GridColumn Field="@nameof(AdminLabel.Name)" Title="Name" />
+            <GridColumn Field="@nameof(AdminLabel.Name)" Title="Name">
+                <Template Context="rowItem">
+                    @{ var item = (AdminLabel)rowItem; }
+                    @((MarkupString)($@"<span class=""badge"" style=""color: {item.ColorHex}; background-color: {item.BgColorHex};"">{item.Name}</span>"))
+                </Template>
+            </GridColumn>
             <GridColumn Field="@nameof(AdminLabel.ColorHex)" Title="Color" Width="100px" />
             <GridColumn Field="@nameof(AdminLabel.IconType)" Title="Icon" Width="120px" />
             <GridColumn Field="@nameof(AdminLabel.LabelType)" Title="Type" Width="120px" />

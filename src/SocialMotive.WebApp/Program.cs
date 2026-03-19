@@ -1,12 +1,30 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using SocialMotive.Core.Authorization;
 using SocialMotive.Core.Data;
 using SocialMotive.Core.Mapping;
 using SocialMotive.WebApp.Components;
 using SocialMotive.Core.Services;
 
+// Bootstrap Serilog before anything else so startup errors are captured
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+try
+{
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Replace default logging with Serilog (reads MinimumLevel from appsettings "Serilog" section)
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.Seq(context.Configuration["Seq:ServerUrl"] ?? "http://localhost:5341"));
 
 builder.Services.AddTelerikBlazor();
 
@@ -37,12 +55,25 @@ builder.Services.AddHttpClient("VolunteerApi", client =>
     .AddHttpMessageHandler<CookieForwardingHandler>();
 builder.Services.AddScoped<VolunteerApiService>();
 
+var telegramBotBaseUrl = (builder.Configuration["TelegramBotBaseUrl"] ?? "https://localhost:7051").TrimEnd('/');
+builder.Services.AddHttpClient("TelegramApi", client =>
+    client.BaseAddress = new Uri($"{telegramBotBaseUrl}/api/telegram/"))
+    .AddHttpMessageHandler<CookieForwardingHandler>();
+builder.Services.AddScoped<TelegramApiService>();
+
 // Add DbContext for SocialMotive database
 builder.Services.AddDbContext<SocialMotiveDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SocialMotive")));
 
 // Add AutoMapper profiles from Core assembly
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(AdminMappingProfile).Assembly));
+
+// Persist DataProtection keys to a shared directory so cookies issued here are valid in TelegramBot.
+var keysPath = builder.Configuration["DataProtection:KeysPath"]
+    ?? Path.Combine(builder.Environment.ContentRootPath, "keys");
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
+    .SetApplicationName("SocialMotive");
 
 // Add cookie authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -79,6 +110,7 @@ builder.Services.AddControllers()
 builder.Services.AddSwaggerGen(options =>
 {
     options.EnableAnnotations();
+    options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
     options.SwaggerDoc("v1", new()
     {
         Title = "SocialMotive Admin API",
@@ -124,6 +156,9 @@ app.UseSwaggerUI(options =>
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+// Structured HTTP request logging (one log per request with status, timing, path)
+app.UseSerilogRequestLogging();
+
 app.MapStaticAssets();
 app.UseAntiforgery();
 
@@ -138,3 +173,13 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

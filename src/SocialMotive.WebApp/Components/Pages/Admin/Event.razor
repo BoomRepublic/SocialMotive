@@ -5,6 +5,7 @@
 @using _Event = SocialMotive.Core.Model.Admin.Event
 @using _EventType = SocialMotive.Core.Model.Admin.EventType
 @using _EventTask = SocialMotive.Core.Model.Admin.EventTask
+@using _Organization = SocialMotive.Core.Model.Admin.Organization
 @attribute [Authorize(Roles = "Admin")]
 @inject AdminApiService Api
 @inject NavigationManager Navigation
@@ -39,17 +40,25 @@
                                     <TelerikTextArea @bind-Value="@_item.Description" Rows="3" />
 
                                     <label class="field-label">Event Type</label>
-                                    <TelerikDropDownList Data="@_eventTypes"
-                                                         TextField="Name"
-                                                         ValueField="EventTypeId"
-                                                         @bind-Value="@_item.EventTypeId"
-                                                         DefaultText="-- Select event type --" />
+                                    <TelerikComboBox Data="@_eventTypes"
+                                                     TextField="Name"
+                                                     ValueField="EventTypeId"
+                                                     @bind-Value="@_item.EventTypeId"
+                                                     Filterable="true"
+                                                     Placeholder="-- Select event type --" />
 
                                     <label class="field-label">Status</label>
                                     <TelerikNumericTextBox @bind-Value="@_item.Status" />
 
-                                    <label class="field-label">Organizer ID</label>
-                                    <TelerikNumericTextBox @bind-Value="@_item.OrganizerId" />
+                                    <label class="field-label">Organization</label>
+                                    <TelerikComboBox Data="@_organizationOptions"
+                                                     TextField="DisplayName"
+                                                     ValueField="OrganizationId"
+                                                     @bind-Value="@_item.OrganizerId"
+                                                     TValue="int?"
+                                                     TItem="OrganizationOption"
+                                                     Filterable="true"
+                                                     Placeholder="-- Select organization --" />
 
                                     <label class="field-label">Start Date</label>
                                     <TelerikDateTimePicker @bind-Value="@_item.StartDate" />
@@ -65,6 +74,12 @@
 
                                     <label class="field-label">Verified</label>
                                     <TelerikCheckBox @bind-Value="@_isVerified" />
+
+                                    @if (!IsCreateMode)
+                                    {
+                                        <label class="field-label">Created At</label>
+                                        <span>@_item.CreatedAt.ToString("g")</span>
+                                    }
                                 </div>
                             </Template>
                         </FormItem>
@@ -118,6 +133,8 @@
 
     private _Event? _item;
     private List<_EventType> _eventTypes = new();
+    private List<_Organization> _organizations = new();
+    private List<OrganizationOption> _organizationOptions = new();
     private List<_EventTask> _tasks = new();
     private string? _errorMessage;
     private bool _isVerified;
@@ -127,6 +144,16 @@
     protected override async Task OnInitializedAsync()
     {
         _eventTypes = await Api.GetEventTypesAsync();
+        _organizations = (await Api.GetOrganizationsAsync())
+            .OrderBy(o => o.Name)
+            .ToList();
+        _organizationOptions = _organizations
+            .Select(o => new OrganizationOption
+            {
+                OrganizationId = o.OrganizationId,
+                DisplayName = $"{o.Name ?? "(Unnamed)"} ({o.OrganizationId})"
+            })
+            .ToList();
 
         if (IsCreateMode)
         {
@@ -186,6 +213,12 @@
         var task = (_EventTask)args.Item;
         await Api.DeleteEventTaskAsync(task.EventTaskId);
         _tasks = await Api.GetEventTasksByEventAsync(EventId);
+    }
+
+    private class OrganizationOption
+    {
+        public int OrganizationId { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
     }
 }
 

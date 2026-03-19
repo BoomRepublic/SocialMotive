@@ -1,15 +1,19 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for EventTask management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminEventTask")]
     public class EventTask
     {
         public int EventTaskId { get; set; }
 
         public int EventId { get; set; }
+
+        public int? EventSkillId { get; set; }
 
         [Required(ErrorMessage = "Name is required")]
         [StringLength(255)]
@@ -23,11 +27,13 @@ namespace SocialMotive.Core.Model.Admin
 
         public int? MaxParticipants { get; set; }
 
+        public int? MinParticipants { get; set; }
+
         public decimal? HoursEstimate { get; set; }
 
         public int OrderIndex { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; init; }
 
         public DateTime UpdatedAt { get; set; }
 
@@ -37,6 +43,6 @@ namespace SocialMotive.Core.Model.Admin
 
         public int? CreatedBy { get; set; }
 
-        public int? ModifiedBy { get; set; }
+        public int? ModifiedBy { get; init; }
     }
 }

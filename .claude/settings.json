@@ -6,7 +6,14 @@
       "Bash(powershell -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 5078\\).OwningProcess -Force\")",
       "Bash(sed -i 's/nameof\\(Invite\\\\./nameof\\(AdminInvite./g; s/\\(Invite\\)rowItem/\\(AdminInvite\\)rowItem/g; s/List<Invite>/List<AdminInvite>/g; s/\\(Invite\\)args\\\\.Item/\\(AdminInvite\\)args.Item/g' src/SocialMotive.WebApp/Components/Pages/Admin/Invites.razor)",
       "Bash(sed -i 's/nameof\\(Setting\\\\./nameof\\(AdminSetting./g; s/\\(Setting\\)rowItem/\\(AdminSetting\\)rowItem/g; s/List<Setting>/List<AdminSetting>/g; s/\\(Setting\\)args\\\\.Item/\\(AdminSetting\\)args.Item/g' src/SocialMotive.WebApp/Components/Pages/Admin/Settings.razor)",
-      "Bash(powershell -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 5078 -ErrorAction SilentlyContinue\\).OwningProcess -Force -ErrorAction SilentlyContinue\")"
+      "Bash(powershell -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 5078 -ErrorAction SilentlyContinue\\).OwningProcess -Force -ErrorAction SilentlyContinue\")",
+      "Bash(sqlcmd -S . -d SocialMotive -Q \"SELECT TOP 1 * FROM Users;\" -C)",
+      "Bash(sqlcmd -S . -d SocialMotive -Q \"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ''Users'' ORDER BY ORDINAL_POSITION;\" -C)",
+      "Bash(sqlcmd -S . -d SocialMotive -Q \":*)",
+      "Bash(powershell -Command \"& ''''C:\\\\Windows\\\\System32\\\\inetsrv\\\\appcmd.exe'''' stop apppool /apppool.name:''''telegram.socialmotive.nl''''\")",
+      "Bash(dotnet publish:*)",
+      "Bash(powershell -Command \"& ''''C:\\\\Windows\\\\System32\\\\inetsrv\\\\appcmd.exe'''' start apppool /apppool.name:''''telegram.socialmotive.nl''''\")",
+      "Bash(C:/Windows/System32/inetsrv/appcmd.exe stop:*)"
     ]
   }
 }

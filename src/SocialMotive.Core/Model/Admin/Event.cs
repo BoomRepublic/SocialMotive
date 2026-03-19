@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for Event management in admin interface
     /// </summary>
+    [SwaggerSchema("AdminEvent")]
     public class Event
     {
         public int EventId { get; set; }
@@ -59,7 +61,7 @@ namespace SocialMotive.Core.Model.Admin
 
         public bool? IsVerified { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; init; }
 
         public DateTime UpdatedAt { get; set; }
 

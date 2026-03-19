@@ -16,7 +16,7 @@ namespace SocialMotive.Core.Mapping
             CreateMap<DbEvent, Event>()
                 .ForMember(d => d.EventTypeName, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.Name : string.Empty))
                 .ForMember(d => d.EventTypeIcon, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.Icon : null))
-                .ForMember(d => d.EventTypeColor, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.Color : null))
+                .ForMember(d => d.EventTypeColor, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.ColorHex : null))
                 .ForMember(d => d.OrganizerName, opt => opt.MapFrom(s => s.Organizer != null ? (s.Organizer.FirstName + " " + s.Organizer.LastName).Trim() : string.Empty))
                 .ForMember(d => d.ParticipantCount, opt => opt.MapFrom(s => s.Participants.Count));
 
@@ -27,7 +27,7 @@ namespace SocialMotive.Core.Mapping
             CreateMap<DbEvent, EventDetail>()
                 .ForMember(d => d.EventTypeName, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.Name : string.Empty))
                 .ForMember(d => d.EventTypeIcon, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.Icon : null))
-                .ForMember(d => d.EventTypeColor, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.Color : null))
+                .ForMember(d => d.EventTypeColor, opt => opt.MapFrom(s => s.EventType != null ? s.EventType.ColorHex : null))
                 .ForMember(d => d.OrganizerName, opt => opt.MapFrom(s => s.Organizer != null ? (s.Organizer.FirstName + " " + s.Organizer.LastName).Trim() : string.Empty))
                 .ForMember(d => d.OrganizerBio, opt => opt.MapFrom(s => s.Organizer != null ? s.Organizer.Bio : null))
                 .ForMember(d => d.ParticipantCount, opt => opt.MapFrom(s => s.Participants.Count))

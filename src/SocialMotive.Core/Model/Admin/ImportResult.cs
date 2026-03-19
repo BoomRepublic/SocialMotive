@@ -1,5 +1,8 @@
+using Swashbuckle.AspNetCore.Annotations;
+
 namespace SocialMotive.Core.Model.Admin
 {
+    [SwaggerSchema("AdminImportResult")]
     public class ImportResult
     {
         public int RowIndex { get; set; }

@@ -386,6 +386,80 @@ public class AdminApiService
 
     #endregion
 
+    #region EventSkills
+
+    public async Task<List<EventSkill>> GetEventSkillsAsync()
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<EventSkill>>("event-skills") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting event skills: {ex.Message}");
+            return new();
+        }
+    }
+
+    public async Task<EventSkill?> GetEventSkillAsync(int id)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<EventSkill>($"event-skill/{id}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting event skill {id}: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<EventSkill?> CreateEventSkillAsync(EventSkill eventSkill)
+    {
+        try
+        {
+            var response = await _http.PostAsJsonAsync("event-skill", eventSkill);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<EventSkill>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error creating event skill: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<EventSkill?> UpdateEventSkillAsync(int id, EventSkill eventSkill)
+    {
+        try
+        {
+            var response = await _http.PutAsJsonAsync($"event-skill/{id}", eventSkill);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<EventSkill>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error updating event skill {id}: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteEventSkillAsync(int id)
+    {
+        try
+        {
+            var response = await _http.DeleteAsync($"event-skill/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error deleting event skill {id}: {ex.Message}");
+            return false;
+        }
+    }
+
+    #endregion
+
     #region UserSocialAccounts
 
     public async Task<List<UserSocialAccount>> GetUserSocialAccountsAsync()
@@ -467,6 +541,80 @@ public class AdminApiService
         catch (Exception ex)
         {
             Debug.WriteLine($"Error deleting user social account {id}: {ex.Message}");
+            return false;
+        }
+    }
+
+    #endregion
+
+    #region SocialPlatforms
+
+    public async Task<List<SocialPlatform>> GetSocialPlatformsAsync()
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<SocialPlatform>>("social-platforms") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting social platforms: {ex.Message}");
+            return new();
+        }
+    }
+
+    public async Task<SocialPlatform?> GetSocialPlatformAsync(int id)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<SocialPlatform>($"social-platform/{id}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting social platform {id}: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<SocialPlatform?> CreateSocialPlatformAsync(SocialPlatform platform)
+    {
+        try
+        {
+            var response = await _http.PostAsJsonAsync("social-platform", platform);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<SocialPlatform>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error creating social platform: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<SocialPlatform?> UpdateSocialPlatformAsync(int id, SocialPlatform platform)
+    {
+        try
+        {
+            var response = await _http.PutAsJsonAsync($"social-platform/{id}", platform);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<SocialPlatform>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error updating social platform {id}: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteSocialPlatformAsync(int id)
+    {
+        try
+        {
+            var response = await _http.DeleteAsync($"social-platform/{id}");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error deleting social platform {id}: {ex.Message}");
             return false;
         }
     }
@@ -1234,6 +1382,115 @@ public class AdminApiService
         {
             Debug.WriteLine($"Error deleting organization user {id}: {ex.Message}");
             return false;
+        }
+    }
+
+    #endregion
+
+    #region Roles
+
+    public async Task<List<Role>> GetRolesAsync()
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<Role>>("roles") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting roles: {ex.Message}");
+            return new();
+        }
+    }
+
+    public async Task<List<UserRole>> GetUserRolesAsync(int userId)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<UserRole>>($"user/{userId}/roles") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting user roles for user {userId}: {ex.Message}");
+            return new();
+        }
+    }
+
+    public async Task<List<UserRole>?> UpdateUserRolesAsync(int userId, List<int> roleIds)
+    {
+        try
+        {
+            var response = await _http.PutAsJsonAsync($"user/{userId}/roles", roleIds);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<UserRole>>() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error updating roles for user {userId}: {ex.Message}");
+            return null;
+        }
+    }
+
+    #endregion
+
+    #region UserGroups
+
+    public async Task<List<UserGroup>> GetUserGroupsAsync(int userId)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<UserGroup>>($"user/{userId}/groups") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting user groups for user {userId}: {ex.Message}");
+            return new();
+        }
+    }
+
+    public async Task<List<UserGroup>?> UpdateUserGroupsAsync(int userId, List<int> groupIds)
+    {
+        try
+        {
+            var response = await _http.PutAsJsonAsync($"user/{userId}/groups", groupIds);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<UserGroup>>() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error updating groups for user {userId}: {ex.Message}");
+            return null;
+        }
+    }
+
+    #endregion
+
+    #region UserLabels
+
+    public async Task<List<UserLabel>> GetUserLabelsAsync(int userId)
+    {
+        try
+        {
+            return await _http.GetFromJsonAsync<List<UserLabel>>($"user/{userId}/labels") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error getting user labels for user {userId}: {ex.Message}");
+            return new();
+        }
+    }
+
+    public async Task<List<UserLabel>?> UpdateUserLabelsAsync(int userId, List<int> labelIds)
+    {
+        try
+        {
+            var response = await _http.PutAsJsonAsync($"user/{userId}/labels", labelIds);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<UserLabel>>() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error updating labels for user {userId}: {ex.Message}");
+            return null;
         }
     }
 

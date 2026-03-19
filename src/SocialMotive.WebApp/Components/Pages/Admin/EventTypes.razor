@@ -30,7 +30,8 @@
             <GridColumn Field="@nameof(AdminEventType.Name)" Title="Name" />
             <GridColumn Field="@nameof(AdminEventType.Description)" Title="Description" />
             <GridColumn Field="@nameof(AdminEventType.Icon)" Title="Icon" Width="120px" />
-            <GridColumn Field="@nameof(AdminEventType.Color)" Title="Color" Width="100px" />
+            <GridColumn Field="@nameof(AdminEventType.ColorHex)" Title="Color" Width="100px" />
+            <GridColumn Field="@nameof(AdminEventType.BgColorHex)" Title="BG Color" Width="100px" />
             <GridColumn Field="@nameof(AdminEventType.Created)" Title="Created" DisplayFormat="{0:d}" Width="120px" Editable="false" />
             <GridColumn Title="Edit" Width="100px" Sortable="false" Filterable="false">
                 <Template Context="rowItem">
