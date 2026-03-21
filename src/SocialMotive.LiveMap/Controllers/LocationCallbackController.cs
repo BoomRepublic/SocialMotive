@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using SocialMotive.Core.Model.LiveMap;
 using SocialMotive.LiveMap.Hubs;
-using SocialMotive.LiveMap.Services;
+using SocialMotive.Core.Services;
 
 namespace SocialMotive.LiveMap.Controllers;
 

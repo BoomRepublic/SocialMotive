@@ -13,7 +13,7 @@ namespace SocialMotive.Core.Data.Generator
         public bool IsLocked { get; set; } = false;
 
         // Style properties
-        public string? BackgroundColor { get; set; }
+        public string? BackgroundColor { get; set; } = "#FFFFFF";
         public string? BlendMode { get; set; } // "normal", "multiply", "screen", "overlay", etc.
     }
 }

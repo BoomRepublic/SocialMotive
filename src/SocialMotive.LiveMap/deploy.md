@@ -14,13 +14,19 @@
 - IIS app pool set to **No Managed Code**
 - `ASPNETCORE_ENVIRONMENT` = `Production` set on the app pool
 
+## Runtime Architecture
+- `SocialMotive.LiveMap` is a Blazor Interactive Server (SSR) app.
+- Initial page rendering and Razor component code run on the server.
+- Live map updates for the browser must use a browser-side SignalR connection from JavaScript.
+- Do **not** create a server-side C# `HubConnection` from a Razor component back to the hub.
+
 ## Production Config (`appsettings.Production.json`)
 Edit directly on the server after publishing, then recycle the app pool.
 
 | Setting | Value |
 |---------|-------|
 | `ConnectionStrings:SocialMotive` | Production SQL Server connection string |
-| `GoogleMaps:ApiKey` | Google Maps API key (optional — map works without it with watermark) |
+
 
 ## Publish & Deploy
 
@@ -44,5 +50,5 @@ C:\Windows\System32\inetsrv\appcmd.exe start apppool /apppool.name:"livemap.soci
 
 ## Verification
 1. Browse `https://livemap.socialmotive.net/` — Leaflet map page should load
-2. Navigate to `/google` and `/telerik` — each map variant should render
-3. Send a live location from Telegram → marker should appear/update on all map pages
+2. Open browser dev tools and confirm the page establishes the live SignalR connection from browser JavaScript
+3. Send a live location from Telegram → marker should appear/update on the map

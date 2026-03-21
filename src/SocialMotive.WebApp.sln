@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialMotive.TelegramBot", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialMotive.LiveMap", "SocialMotive.LiveMap\SocialMotive.LiveMap.csproj", "{8B1DD9D9-D9C4-4EDB-9C06-3549666D4598}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialMotive.Designer", "SocialMotive.Designer\SocialMotive.Designer.csproj", "{4621864C-578F-4C30-9CDA-D00A24834C7A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{8B1DD9D9-D9C4-4EDB-9C06-3549666D4598}.Release|x64.Build.0 = Release|Any CPU
 		{8B1DD9D9-D9C4-4EDB-9C06-3549666D4598}.Release|x86.ActiveCfg = Release|Any CPU
 		{8B1DD9D9-D9C4-4EDB-9C06-3549666D4598}.Release|x86.Build.0 = Release|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Debug|x64.Build.0 = Debug|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Debug|x86.Build.0 = Debug|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Release|x64.ActiveCfg = Release|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Release|x64.Build.0 = Release|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Release|x86.ActiveCfg = Release|Any CPU
+		{4621864C-578F-4C30-9CDA-D00A24834C7A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

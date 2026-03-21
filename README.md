@@ -20,13 +20,15 @@
 ## Technology Stack
 
 - **Runtime**: .NET 10.0 ASP.NET Core
-- **UI Framework**: Blazor Web App (Auto/Interactive rendering)
+- **UI Framework**: Blazor Web App using Interactive Server rendering (SSR)
 - **UI Components**: Telerik UI for Blazor
 - **Database**: Microsoft SQL Server (two databases: `socialmotive`, `assetgenerator`)
 - **Authorization**: Claims-based role access control
 - **ORM**: Entity Framework Core
 - **Testing**: xUnit, Moq
 - **API Documentation**: Swagger/OpenAPI
+
+> **Architecture note**: Blazor component code runs on the server. Any realtime SignalR connection initiated from a page for browser updates must be created in browser JavaScript, not by creating a server-side `HubConnection` from a Razor component.
 
 ## Project Structure
 

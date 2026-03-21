@@ -56,7 +56,7 @@ It handles user-facing link/status/unlink API endpoints and the internal `redeem
 1. User sends `/start` or `/register` (unlinked users are prompted to register)
 2. Bot collects: first name, last name, email (validated + uniqueness check), phone (`/skip`-able), city (text search against Cities table, `/skip`-able)
 3. Bot shows summary, user confirms with "yes"/"no"
-4. On confirm: creates `DbUser` (random PasswordHash — no web login), `DbUserSocialAccount` (Telegram linked, `Verified = true`), `DbTracker` (with unique `QrGuid`/`InviteCode`)
+4. On confirm: creates `DbUser` (random PasswordHash — no web login), `DbUserSocialAccount` (Telegram linked, `Verified = true`), `DbTracker`
 5. No role is assigned — admin assigns roles later
 - Registration state is held in a static `ConcurrentDictionary<long, RegistrationState>` keyed by chatId
 - 30-minute timeout; expired sessions cleaned opportunistically
@@ -68,7 +68,7 @@ It handles user-facing link/status/unlink API endpoints and the internal `redeem
 - `WebApiBaseUrl` points to this app itself — `TelegramUpdateHandler` calls `POST api/telegram/redeem-code` via HTTP to consume link codes held in `TelegramController`'s in-memory `ConcurrentDictionary`
 - `TelegramPlatformId = 8` is hardcoded in both `TelegramController` (Core) and `TelegramUpdateHandler` — keep in sync if changed
 - On startup, `TelegramBotService` calls `SetWebhook()` automatically (webhook mode) — no manual BotFather registration needed
-- When creating `DbTracker`, always set `QrGuid = Guid.NewGuid()` and `InviteCode = Guid.NewGuid()` — `QrGuid` has a unique index and will fail if left as `Guid.Empty`
+- `InviteCode` and `QrGuid` columns were removed from Trackers (migration 010) — do not reference them
 
 ## Commands
 ```bash

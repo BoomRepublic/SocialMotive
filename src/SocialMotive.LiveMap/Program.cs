@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SocialMotive.Core.Data;
+using SocialMotive.Core.Services;
 using SocialMotive.LiveMap.Components;
 using SocialMotive.LiveMap.Hubs;
 using SocialMotive.LiveMap.Services;
@@ -11,9 +12,10 @@ builder.Services.AddDbContext<SocialMotiveDbContext>(options =>
 
 builder.Services.AddSignalR();
 builder.Services.AddControllers();
-builder.Services.AddTelerikBlazor();
 
 builder.Services.AddSingleton<LocationCacheService>();
+builder.Services.AddScoped<ITrackerService, TrackerService>();
+builder.Services.AddHostedService<TrackerTimeoutService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

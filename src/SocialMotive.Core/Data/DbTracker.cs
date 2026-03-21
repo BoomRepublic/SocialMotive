@@ -10,10 +10,8 @@ namespace SocialMotive.Core.Data
         public string? Email { get; set; }
         public string? Mobile { get; set; }
         public string? LicensePlate { get; set; }
-        public Guid InviteCode { get; set; }
         public string? InviteName { get; set; }
         public int? InvitedBy_TrackerId { get; set; }
-        public Guid QrGuid { get; set; }
         public DateTime JoinedAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
@@ -28,12 +26,17 @@ namespace SocialMotive.Core.Data
         public bool? IsAdmin { get; set; }
         public int? InviteId { get; set; }
         public int? UserId { get; set; }
+        public int? InviteVerificationCodeId { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsLive { get; set; }
+        public DateTime? LastUpdateReceivedAt { get; set; }
 
         // Navigation properties
         public DbGroup? Group { get; set; }
         public DbTrackerRole? TrackerRole { get; set; }
         public DbCity? City { get; set; }
         public DbInvite? Invite { get; set; }
+        public DbVerificationCode? InviteVerificationCode { get; set; }
         public ICollection<DbLocation> Locations { get; set; } = new List<DbLocation>();
         public ICollection<DbTrackerLabel> TrackerLabels { get; set; } = new List<DbTrackerLabel>();
     }

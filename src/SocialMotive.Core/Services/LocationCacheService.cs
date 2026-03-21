@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using SocialMotive.Core.Model.LiveMap;
 
-namespace SocialMotive.LiveMap.Services;
+namespace SocialMotive.Core.Services;
 
 /// <summary>
 /// Thread-safe in-memory cache of the latest location per tracker.

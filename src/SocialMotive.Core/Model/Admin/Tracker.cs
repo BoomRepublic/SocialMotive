@@ -28,12 +28,8 @@ namespace SocialMotive.Core.Model.Admin
         [StringLength(20)]
         public string? LicensePlate { get; set; }
 
-        public Guid InviteCode { get; set; }
-
         [StringLength(100)]
         public string? InviteName { get; set; }
-
-        public Guid QrGuid { get; set; }
 
         public DateTime JoinedAt { get; set; }
 
@@ -60,5 +56,11 @@ namespace SocialMotive.Core.Model.Admin
         public int? InviteId { get; set; }
 
         public int? UserId { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public bool IsLive { get; set; }
+
+        public DateTime? LastUpdateReceivedAt { get; init; }
     }
 }

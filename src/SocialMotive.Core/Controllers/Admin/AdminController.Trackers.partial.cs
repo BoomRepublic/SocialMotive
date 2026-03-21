@@ -63,8 +63,6 @@ public partial class AdminController
         try
         {
             var tracker = _mapper.Map<DbTracker>(Tracker);
-            tracker.InviteCode = Guid.NewGuid();
-            tracker.QrGuid = Guid.NewGuid();
             tracker.CreatedAt = DateTime.UtcNow;
             tracker.ModifiedAt = DateTime.UtcNow;
             tracker.JoinedAt = DateTime.UtcNow;

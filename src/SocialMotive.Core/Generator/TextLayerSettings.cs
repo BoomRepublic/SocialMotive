@@ -10,6 +10,8 @@ namespace SocialMotive.Core.Data.Generator
         public decimal? LetterSpacing { get; set; }
 
         // Font styling
+        public string? FontFamily { get; set; } = "Arial";
+        public decimal? FontSize { get; set; } = 24;
         public string? FontWeight { get; set; } // "normal", "bold", "100-900"
         public string? FontStyle { get; set; } // "normal", "italic", "oblique"
         public string? TextDecoration { get; set; } // "none", "underline", "overline", "line-through"

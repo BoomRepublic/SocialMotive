@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SocialMotive.Core.Data;
 using SocialMotive.Core.Mapping;
+using SocialMotive.Core.Services;
 using SocialMotive.TelegramBot.Services;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
@@ -32,11 +33,18 @@ try
     builder.Services.AddDbContext<SocialMotiveDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("SocialMotive")));
 
-    builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(AdminMappingProfile).Assembly));
+    builder.Services.AddAutoMapper(cfg =>
+    {
+        var license = builder.Configuration["Licenses:AutoMapper"];
+        if (!string.IsNullOrEmpty(license))
+            cfg.LicenseKey = license;
+        cfg.AddMaps(typeof(AdminMappingProfile).Assembly);
+    });
 
     builder.Services.Configure<TelegramBotSettings>(
         builder.Configuration.GetSection(TelegramBotSettings.SectionName));
 
+    builder.Services.AddScoped<ITrackerService, TrackerService>();
     builder.Services.AddSingleton<BotStatusService>();
     builder.Services.AddSingleton<TelegramUpdateHandler>();
     builder.Services.AddHostedService<TelegramBotService>();

@@ -12,5 +12,8 @@ namespace SocialMotive.Core.Data.Generator
 
         // Rotation
         public decimal? Rotation { get; set; } = 0;
+
+        // Zoom (1 = 100%, 0.5 = 50%, 2 = 200%)
+        public decimal? Zoom { get; set; } = 1;
     }
 }

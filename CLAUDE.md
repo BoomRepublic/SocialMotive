@@ -15,7 +15,7 @@ SocialMotive is a worker/volunteer/event organizer platform built as a unified B
 
 ## Tech Stack
 - **.NET 10.0** (SDK 10.0.0)
-- **Blazor Web App** — Interactive Server render mode
+- **Blazor Web App** — Interactive Server render mode (SSR)
 - **Telerik UI for Blazor 13.0.0** — primary UI component library
 - **Entity Framework Core 10.0.0** with **SQL Server** **Code First Approach**
 - **Cookie-based claims authentication** with role-based authorization
@@ -42,6 +42,8 @@ Blazor Component → ApiService (HttpClient) → Controller → DbContext → SQ
 - Blazor components call the API through service classes in `Services/` using `IHttpClientFactory` (named clients: `"AdminApi"`, `"GeneratorApi"`, `"PublicApi"`, `"VolunteerApi"`, `"TelegramApi"`)
 - Services forward auth cookies from the incoming HTTP context to outgoing API calls
 - Controllers inject `SocialMotiveDbContext` directly (no repository/service abstraction layer)
+- **SSR rule**: Razor component code executes on the server. Do not create server-side SignalR `HubConnection` instances from Blazor pages to push browser updates.
+- **Realtime rule**: When a page needs live updates in the browser, create the SignalR connection in browser JavaScript and let the Blazor page provide initial SSR-rendered state only.
 - **Telegram Bot**: `TelegramBotService` (BackgroundService, long-polling) delegates updates to `TelegramUpdateHandler` (singleton). Link codes use in-memory `ConcurrentDictionary` with expiry.
 
 ## Authorization
@@ -49,6 +51,11 @@ Blazor Component → ApiService (HttpClient) → Controller → DbContext → SQ
 - Roles: Get roles from database
 - Controllers use `[Authorize(Roles = "...")]`
 - Blazor components receive cascading `AuthenticationState`
+
+## Telerik Blazor MCP
+- A **Telerik Blazor MCP server** is configured in `.vscode/mcp.json` and provides AI-assisted guidance for Telerik UI for Blazor components.
+- **Always use the Telerik MCP** when implementing or configuring Telerik Blazor components (grids, forms, dropdowns, charts, etc.) — it provides accurate, version-specific API guidance.
+- The MCP server runs via `telerik-blazor-mcp` CLI tool with a license key.
 
 ## Coding Conventions
 - **One class per file** — every class, record, and interface gets its own file

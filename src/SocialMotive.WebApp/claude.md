@@ -3,6 +3,8 @@
 ## Purpose
 Blazor Web App host for SocialMotive. Serves Blazor components, registers DI, and loads API controllers from `SocialMotive.Core`. Contains no controllers or services of its own.
 
+This app uses Interactive Server rendering (SSR). Razor component code executes on the server, not in the browser.
+
 ## Folder Structure
 ```
 SocialMotive.WebApp/
@@ -57,6 +59,8 @@ Services registered as scoped: `AdminApiService`, `GeneratorApiService`, `Public
 - Components inject services via `@inject AdminApiService Api` (or the relevant service)
 - Global usings are in `_Imports.razor` — add new project-wide usings there, not per-file
 - Interactive render mode: `AddInteractiveServerComponents()` / `AddInteractiveServerRenderMode()`
+- Do **not** create a C# SignalR `HubConnection` inside a Razor component to reach back into the app from the server side.
+- If a page needs browser realtime updates, create the SignalR connection in browser JavaScript and treat the Razor component as SSR + initial state.
 
 ## Adding a New Admin Page
 1. Create `Components/Pages/Admin/MyEntity.razor` with `@page "/admin/my-entity"`

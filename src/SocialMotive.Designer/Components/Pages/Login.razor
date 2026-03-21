@@ -1,0 +1,126 @@
+@page "/login"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Json
+@inject NavigationManager NavManager
+@inject IHttpClientFactory HttpClientFactory
+
+<PageTitle>Sign In — SocialMotive Designer</PageTitle>
+
+<div style="display:flex; align-items:center; justify-content:center; height:100vh; background:var(--kendo-color-app-surface,#0f172a);">
+    <div style="width:360px; padding:2rem; background:var(--kendo-color-surface,#1e293b); border:1px solid var(--kendo-color-border,#334155); border-radius:8px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+
+        <div style="text-align:center; margin-bottom:1.75rem;">
+            <div style="font-size:1.4rem; font-weight:700; color:var(--kendo-color-on-app-surface,#e2e8f0); letter-spacing:0.02em;">
+                SocialMotive Designer
+            </div>
+            <div style="font-size:0.875rem; color:var(--kendo-color-subtle-text,#94a3b8); margin-top:0.35rem;">
+                Sign in to continue
+            </div>
+        </div>
+
+        @if (_error != null)
+        {
+            <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; padding:0.6rem 0.75rem; border-radius:5px; font-size:0.85rem; margin-bottom:1rem;">
+                @_error
+            </div>
+        }
+
+        <div style="display:flex; flex-direction:column; gap:0.85rem; margin-bottom:1.25rem;">
+            <div>
+                <label style="display:block; font-size:0.78rem; color:var(--kendo-color-subtle-text,#94a3b8); margin-bottom:0.3rem;">Email</label>
+                <TelerikTextBox @bind-Value="@_email"
+                                Placeholder="you@example.com"
+                                Width="100%"
+                                Id="email" />
+            </div>
+            <div>
+                <label style="display:block; font-size:0.78rem; color:var(--kendo-color-subtle-text,#94a3b8); margin-bottom:0.3rem;">Password</label>
+                <TelerikTextBox @bind-Value="@_password"
+                                Password="true"
+                                Placeholder="Enter your password"
+                                Width="100%"
+                                Id="password" />
+            </div>
+        </div>
+
+        <TelerikButton OnClick="@HandleLoginAsync"
+                       ThemeColor="@ThemeConstants.Button.ThemeColor.Primary"
+                       Size="@ThemeConstants.Button.Size.Large"
+                       Class="k-w-full"
+                       Enabled="@(!_loading)">
+            @(_loading ? "Signing in…" : "Sign In")
+        </TelerikButton>
+
+        <div style="display:flex; align-items:center; gap:0.75rem; margin:1.25rem 0;">
+            <hr style="flex:1; border:none; border-top:1px solid var(--kendo-color-border,#334155);" />
+            <span style="font-size:0.75rem; color:var(--kendo-color-subtle-text,#94a3b8);">or</span>
+            <hr style="flex:1; border:none; border-top:1px solid var(--kendo-color-border,#334155);" />
+        </div>
+
+        <TelerikButton OnClick="@LoginAsAdmin"
+                       FillMode="@ThemeConstants.Button.FillMode.Outline"
+                       Size="@ThemeConstants.Button.Size.Large"
+                       Class="k-w-full">
+            Login as Admin (Demo)
+        </TelerikButton>
+
+    </div>
+</div>
+
+@code {
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private string? _error;
+    private bool _loading;
+
+    private async Task HandleLoginAsync()
+    {
+        _error = null;
+
+        if (string.IsNullOrWhiteSpace(_email))
+        {
+            _error = "Email is required.";
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("Auth");
+            var response = await client.PostAsJsonAsync("api/auth/login", new
+            {
+                email = _email.Trim(),
+                password = _password,
+                rememberMe = false
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavManager.NavigateTo(ReturnUrl ?? "/", forceLoad: true);
+            }
+            else
+            {
+                var body = await response.Content.ReadFromJsonAsync<ErrorBody>();
+                _error = body?.Message ?? "Invalid email or password.";
+            }
+        }
+        catch
+        {
+            _error = "Unable to reach the server. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void LoginAsAdmin()
+        => NavManager.NavigateTo("/api/auth/demo-login/admin?returnUrl=/", forceLoad: true);
+
+    private record ErrorBody(string? Message);
+}

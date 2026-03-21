@@ -85,7 +85,7 @@ sql/
 - Generator tables use explicit `ToTable(...)` mappings in the DbContext fluent API
 
 ## Schema Snapshot
-> **Last updated**: 2025-07-15
+> **Last updated**: 2026-03-19
 > **Refresh command**: `sqlcmd -S . -d SocialMotive -E -i sql\query-schema.sql -W`
 
 ### Tables & Columns
@@ -290,10 +290,8 @@ Trackers Phone nvarchar(20) NULL
 Trackers Email nvarchar(150) NULL
 Trackers Mobile nvarchar(30) NULL
 Trackers LicensePlate nvarchar(20) NULL
-Trackers InviteCode uniqueidentifier NOT NULL (newid())
 Trackers InviteName nvarchar(50) NULL
 Trackers InvitedBy_TrackerId int NULL
-Trackers QrGuid uniqueidentifier NOT NULL (newid())
 Trackers JoinedAt datetime NOT NULL (getutcdate())
 Trackers CreatedAt datetime NOT NULL (getutcdate())
 Trackers ModifiedAt datetime NOT NULL (getutcdate())
@@ -308,6 +306,10 @@ Trackers CityId int NULL
 Trackers IsAdmin bit NULL
 Trackers InviteId int NULL
 Trackers UserId int NULL
+Trackers InviteVerificationCodeId int NULL
+Trackers IsActive bit NOT NULL ((0))
+Trackers IsLive bit NOT NULL ((0))
+Trackers LastUpdateReceivedAt datetime NULL
 UserGroups UserGroupId int NOT NULL IDENTITY
 UserGroups UserId int NULL
 UserGroups GroupId int NULL
@@ -350,7 +352,7 @@ VerificationCodes IsUsed bit NOT NULL ((0))
 VerificationCodes UsedAt datetime NULL
 VerificationCodes CreatedAt datetime NOT NULL (getdate())
 
-(257 rows affected)
+(258 rows affected)
 
 ```
 

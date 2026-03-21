@@ -6,11 +6,11 @@ namespace SocialMotive.Core.Data.Generator
         public string ShapeType { get; set; } = "rectangle"; // "rectangle", "circle", "ellipse", "polygon", "star", "line", "path"
 
         // Fill properties
-        public string? FillColor { get; set; }
+        public string? FillColor { get; set; } = "#000000";
         public decimal? FillOpacity { get; set; }
 
         // Stroke/Border (different from LayerSettings.BorderColor for more control)
-        public string? StrokeColor { get; set; }
+        public string? StrokeColor { get; set; } = "#000000";
         public decimal? StrokeWidth { get; set; }
         public string? StrokeDasharray { get; set; } // e.g., "5,5" for dashed lines
         public string? StrokeLinecap { get; set; } // "butt", "round", "square"

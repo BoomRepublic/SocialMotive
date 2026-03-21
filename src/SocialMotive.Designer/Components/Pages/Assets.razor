@@ -1,0 +1,439 @@
+@page "/assets"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using System.Text.Json
+@using AutoMapper
+@using AutoMapper.QueryableExtensions
+@using Microsoft.EntityFrameworkCore
+@using SkiaSharp
+@using SocialMotive.Core.Data
+@using SocialMotive.Core.Data.Generator
+@using SocialMotive.Core.Model.Generator
+@inject IJSRuntime JS
+@inject IDbContextFactory<SocialMotiveDbContext> DbFactory
+@inject IMapper Mapper
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Assets</PageTitle>
+
+<div class="designer-page">
+
+    @* ── Toolbar ─────────────────────────────────────────────────── *@
+    <div class="designer-toolbar">
+        <div class="designer-toolbar-left">
+            <TelerikButton OnClick="@TriggerUpload"
+                           ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">
+                Upload
+            </TelerikButton>
+            <InputFile @ref="_inputFileRef"
+                       OnChange="@OnFileSelectedAsync"
+                       accept="image/*"
+                       style="display:none;"
+                       id="asset-file-input" />
+        </div>
+        <div class="designer-toolbar-center">
+            <span class="template-info">@_assets.Count asset(s)</span>
+        </div>
+        <div class="designer-toolbar-right">
+            <TelerikButton OnClick="@DeleteAssetAsync"
+                           Enabled="@(_selectedAsset != null)"
+                           ThemeColor="@ThemeConstants.Button.ThemeColor.Error">
+                Delete
+            </TelerikButton>
+        </div>
+    </div>
+
+    @* ── Body ───────────────────────────────────────────────────── *@
+    <div class="designer-body">
+        @if (_loading)
+        {
+            <div class="designer-empty"><p>Loading…</p></div>
+        }
+        else if (_error != null)
+        {
+            <div class="designer-empty">
+                <p style="color:var(--kendo-color-error,#f87171);">@_error</p>
+                <TelerikButton OnClick="@LoadAssetsAsync"
+                               ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">Retry</TelerikButton>
+            </div>
+        }
+        else
+        {
+            <TelerikSplitter Width="100%" Height="100%">
+                <SplitterPanes>
+
+                    @* ── Left: Asset Grid ── *@
+                    <SplitterPane>
+                        <TelerikGrid Data="@_assets"
+                                     TItem="AssetRow"
+                                     SelectionMode="GridSelectionMode.Single"
+                                     SelectedItems="@_selectedItems"
+                                     SelectedItemsChanged="@OnSelectionChanged"
+                                     Sortable="true"
+                                     FilterMode="GridFilterMode.FilterMenu"
+                                     Pageable="true"
+                                     PageSize="50"
+                                     Height="100%">
+                            <GridColumns>
+                                <GridColumn Field="@nameof(AssetRow.AssetId)" Title="" Width="80px" Sortable="false" Filterable="false">
+                                    <Template>
+                                        @{var item = (AssetRow)context;}
+                                        <img src="/api/design/assets/@item.AssetId/image"
+                                             style="width:48px; height:48px; object-fit:contain; border-radius:4px; background:#1e293b;"
+                                             alt="@item.FileName" loading="lazy" />
+                                    </Template>
+                                </GridColumn>
+                                <GridColumn Field="@nameof(AssetRow.FileName)" Title="Name" />
+                                <GridColumn Field="@nameof(AssetRow.Dimensions)" Title="Size" Width="110px" />
+                                <GridColumn Field="@nameof(AssetRow.Tags)" Title="Tags" />
+                                <GridColumn Field="@nameof(AssetRow.CreatedAt)" Title="Created" Width="140px" DisplayFormat="{0:yyyy-MM-dd}" />
+                            </GridColumns>
+                        </TelerikGrid>
+                    </SplitterPane>
+
+                    @* ── Right: Properties ── *@
+                    <SplitterPane Size="300px" Min="200px" Collapsible="true" Scrollable="true">
+                        @if (_selectedAsset == null)
+                        {
+                            <div class="panel-empty">Select an asset to view properties.</div>
+                        }
+                        else
+                        {
+                            <div class="panel-section" style="overflow-y:auto;">
+                                <div class="prop-group">
+                                    <div class="prop-row">
+                                        <label>Name</label>
+                                        <TelerikTextBox @bind-Value="@_selectedAsset.FileName" Width="100%" />
+                                    </div>
+                                    <div class="prop-row">
+                                        <label>Tags</label>
+                                        <TelerikTextBox @bind-Value="@_selectedAsset.Tags" Width="100%" />
+                                    </div>
+                                    <div class="prop-row">
+                                        <label>Public</label>
+                                        <TelerikCheckBox @bind-Value="@_selectedAsset.IsPublic" />
+                                    </div>
+                                </div>
+
+                                @if (_selectedMeta != null)
+                                {
+                                    <div class="prop-group">
+                                        <div class="prop-row">
+                                            <label>Dimensions</label>
+                                            <span class="prop-value">@(_selectedMeta.Width)×@(_selectedMeta.Height) px</span>
+                                        </div>
+                                        @if (_selectedMeta.FileSize.HasValue)
+                                        {
+                                            <div class="prop-row">
+                                                <label>File Size</label>
+                                                <span class="prop-value">@FormatBytes(_selectedMeta.FileSize.Value)</span>
+                                            </div>
+                                        }
+                                        @if (_selectedMeta.HasAlpha.HasValue)
+                                        {
+                                            <div class="prop-row">
+                                                <label>Alpha</label>
+                                                <span class="prop-value">@(_selectedMeta.HasAlpha.Value ? "Yes" : "No")</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+
+                                <div class="prop-group">
+                                    <div class="prop-row">
+                                        <label>Created</label>
+                                        <span class="prop-value">@_selectedAsset.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                                    </div>
+                                    <div class="prop-row">
+                                        <label>Updated</label>
+                                        <span class="prop-value">@_selectedAsset.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                                    </div>
+                                </div>
+
+                                <div class="prop-footer">
+                                    <TelerikButton OnClick="@SaveAssetAsync"
+                                                   ThemeColor="@ThemeConstants.Button.ThemeColor.Primary">
+                                        Save
+                                    </TelerikButton>
+                                    <TelerikButton OnClick="@UpdateMetaDataAsync"
+                                                   ThemeColor="@ThemeConstants.Button.ThemeColor.Base">
+                                        Refresh Metadata
+                                    </TelerikButton>
+                                </div>
+                            </div>
+                        }
+                    </SplitterPane>
+
+                </SplitterPanes>
+            </TelerikSplitter>
+        }
+    </div>
+
+    <TelerikNotification @ref="_notif" AnimationType="AnimationType.Fade"
+                         HorizontalPosition="NotificationHorizontalPosition.Right"
+                         VerticalPosition="NotificationVerticalPosition.Bottom" />
+</div>
+
+@code {
+    // ── State ──────────────────────────────────────────────────────
+
+    private List<AssetRow> _assets = [];
+    private IEnumerable<AssetRow> _selectedItems = Enumerable.Empty<AssetRow>();
+    private DbAsset? _selectedAsset;
+    private ImageMetaData? _selectedMeta;
+    private bool _loading = true;
+    private string? _error;
+    private InputFile? _inputFileRef;
+    private TelerikNotification _notif = default!;
+
+    private static readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
+
+    // ── Lifecycle ──────────────────────────────────────────────────
+
+    protected override async Task OnInitializedAsync() => await LoadAssetsAsync();
+
+    // ── Data ───────────────────────────────────────────────────────
+
+    private async Task LoadAssetsAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var rows = await db.Assets
+                .Where(a => a.DeletedAt == null)
+                .OrderByDescending(a => a.CreatedAt)
+                .Select(a => new { a.AssetId, a.FileName, a.Tags, a.IsPublic, a.CreatedAt, a.ImageMetaDataJson })
+                .ToListAsync();
+
+            _assets = rows.Select(a =>
+            {
+                var meta = a.ImageMetaDataJson != null
+                    ? JsonSerializer.Deserialize<ImageMetaData>(a.ImageMetaDataJson, _json)
+                    : null;
+                return new AssetRow
+                {
+                    AssetId = a.AssetId,
+                    FileName = a.FileName,
+                    Tags = a.Tags,
+                    IsPublic = a.IsPublic,
+                    CreatedAt = a.CreatedAt,
+                    Dimensions = meta?.Width != null ? $"{meta.Width}×{meta.Height}" : "—"
+                };
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    // ── Selection ──────────────────────────────────────────────────
+
+    private async Task OnSelectionChanged(IEnumerable<AssetRow> items)
+    {
+        _selectedItems = items;
+        var row = items.FirstOrDefault();
+        if (row == null)
+        {
+            _selectedAsset = null;
+            _selectedMeta = null;
+            return;
+        }
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        _selectedAsset = await db.Assets.FindAsync(row.AssetId);
+        _selectedMeta = _selectedAsset?.ImageMetaDataJson != null
+            ? JsonSerializer.Deserialize<ImageMetaData>(_selectedAsset.ImageMetaDataJson, _json)
+            : null;
+    }
+
+    // ── Upload ─────────────────────────────────────────────────────
+
+    private async Task TriggerUpload()
+    {
+        await JS.InvokeVoidAsync("eval", "document.getElementById('asset-file-input').click()");
+    }
+
+    private async Task OnFileSelectedAsync(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        try
+        {
+            const long maxSize = 20 * 1024 * 1024; // 20 MB
+            await using var stream = file.OpenReadStream(maxSize);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var sourceBytes = ms.ToArray();
+
+            // Convert to PNG via SkiaSharp
+            using var bitmap = SKBitmap.Decode(sourceBytes);
+            if (bitmap == null)
+            {
+                NotifyError("Could not decode image file.");
+                return;
+            }
+
+            using var image = SKImage.FromBitmap(bitmap);
+            using var pngData = image.Encode(SKEncodedImageFormat.Png, 100);
+            var pngBytes = pngData.ToArray();
+
+            var meta = new ImageMetaData
+            {
+                Width = bitmap.Width,
+                Height = bitmap.Height,
+                FileSize = pngBytes.Length,
+                HasAlpha = bitmap.AlphaType != SKAlphaType.Opaque,
+                MimeType = "image/png"
+            };
+
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userId = int.Parse(auth.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var asset = new DbAsset
+            {
+                UserId = userId,
+                FileName = Path.GetFileNameWithoutExtension(file.Name) + ".png",
+                ImagePng = pngBytes,
+                ImageMetaDataJson = JsonSerializer.Serialize(meta, _json),
+                IsPublic = false,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            db.Assets.Add(asset);
+            await db.SaveChangesAsync();
+
+            await LoadAssetsAsync();
+            Notify($"Uploaded: {asset.FileName}");
+        }
+        catch (Exception ex)
+        {
+            NotifyError($"Upload failed: {ex.Message}");
+        }
+    }
+
+    // ── Save ───────────────────────────────────────────────────────
+
+    private async Task SaveAssetAsync()
+    {
+        if (_selectedAsset == null) return;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var entity = await db.Assets.FindAsync(_selectedAsset.AssetId);
+            if (entity == null) { NotifyError("Asset not found."); return; }
+
+            entity.FileName = _selectedAsset.FileName;
+            entity.Tags = _selectedAsset.Tags;
+            entity.IsPublic = _selectedAsset.IsPublic;
+            entity.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+
+            await LoadAssetsAsync();
+            Notify("Asset saved.");
+        }
+        catch (Exception ex)
+        {
+            NotifyError($"Save failed: {ex.Message}");
+        }
+    }
+
+    // ── Delete ─────────────────────────────────────────────────────
+
+    private async Task DeleteAssetAsync()
+    {
+        if (_selectedAsset == null) return;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var entity = await db.Assets.FindAsync(_selectedAsset.AssetId);
+            if (entity != null)
+            {
+                db.Assets.Remove(entity);
+                await db.SaveChangesAsync();
+            }
+
+            _selectedAsset = null;
+            _selectedMeta = null;
+            _selectedItems = Enumerable.Empty<AssetRow>();
+            await LoadAssetsAsync();
+            Notify("Asset deleted.");
+        }
+        catch (Exception ex)
+        {
+            NotifyError($"Delete failed: {ex.Message}");
+        }
+    }
+
+    // ── Update Metadata ─────────────────────────────────────────────
+
+    private async Task UpdateMetaDataAsync()
+    {
+        if (_selectedAsset == null) return;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var entity = await db.Assets.FindAsync(_selectedAsset.AssetId);
+            if (entity?.ImagePng is not { Length: > 0 }) { NotifyError("No image data."); return; }
+
+            using var bitmap = SKBitmap.Decode(entity.ImagePng);
+            if (bitmap == null) { NotifyError("Could not decode image."); return; }
+
+            var meta = new ImageMetaData
+            {
+                Width = bitmap.Width,
+                Height = bitmap.Height,
+                FileSize = entity.ImagePng.Length,
+                HasAlpha = bitmap.AlphaType != SKAlphaType.Opaque,
+                MimeType = "image/png"
+            };
+            entity.ImageMetaDataJson = JsonSerializer.Serialize(meta, _json);
+            entity.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+
+            _selectedAsset.ImageMetaDataJson = entity.ImageMetaDataJson;
+            _selectedMeta = meta;
+            await LoadAssetsAsync();
+            Notify("Metadata updated.");
+        }
+        catch (Exception ex)
+        {
+            NotifyError($"Metadata update failed: {ex.Message}");
+        }
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────
+
+    private void Notify(string msg) =>
+        _notif.Show(new NotificationModel { Text = msg, ThemeColor = ThemeConstants.Notification.ThemeColor.Success, Closable = true, CloseAfter = 4000 });
+
+    private void NotifyError(string msg) =>
+        _notif.Show(new NotificationModel { Text = msg, ThemeColor = ThemeConstants.Notification.ThemeColor.Error, Closable = true, CloseAfter = 6000 });
+
+    private static string FormatBytes(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
+        _ => $"{bytes / (1024.0 * 1024.0):F1} MB"
+    };
+
+    // ── Row model ──────────────────────────────────────────────────
+
+    private class AssetRow
+    {
+        public int AssetId { get; set; }
+        public string FileName { get; set; } = string.Empty;
+        public string? Tags { get; set; }
+        public bool IsPublic { get; set; }
+        public string Dimensions { get; set; } = "—";
+        public DateTime CreatedAt { get; set; }
+    }
+}

@@ -166,73 +166,18 @@ public class GeneratorApiService
 
     #region Layers
 
-    public async Task<List<Layer>> GetLayersAsync(int templateId)
+    public async Task<TemplateDetail?> UpdateTemplateLayersAsync(int templateId, List<Layer> layers)
     {
         try
         {
-            return await _http.GetFromJsonAsync<List<Layer>>($"templates/{templateId}/layers") ?? new();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error getting layers for template {templateId}: {ex.Message}");
-            return new();
-        }
-    }
-
-    public async Task<Layer?> GetLayerAsync(int id)
-    {
-        try
-        {
-            return await _http.GetFromJsonAsync<Layer>($"layers/{id}");
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error getting layer {id}: {ex.Message}");
-            return null;
-        }
-    }
-
-    public async Task<Layer?> CreateLayerAsync(Layer Layer)
-    {
-        try
-        {
-            var response = await _http.PostAsJsonAsync("layers", Layer);
+            var response = await _http.PutAsJsonAsync($"templates/{templateId}/layers", layers);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Layer>();
+            return await response.Content.ReadFromJsonAsync<TemplateDetail>();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error creating layer: {ex.Message}");
+            Debug.WriteLine($"Error updating layers for template {templateId}: {ex.Message}");
             return null;
-        }
-    }
-
-    public async Task<Layer?> UpdateLayerAsync(int id, Layer Layer)
-    {
-        try
-        {
-            var response = await _http.PutAsJsonAsync($"layers/{id}", Layer);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Layer>();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error updating layer {id}: {ex.Message}");
-            return null;
-        }
-    }
-
-    public async Task<bool> DeleteLayerAsync(int id)
-    {
-        try
-        {
-            var response = await _http.DeleteAsync($"layers/{id}");
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error deleting layer {id}: {ex.Message}");
-            return false;
         }
     }
 

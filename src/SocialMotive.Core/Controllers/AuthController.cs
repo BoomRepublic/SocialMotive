@@ -110,6 +110,66 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Login endpoint — authenticates a user by email and signs them in with cookie auth.
+    /// Password verification is deferred until hashing is implemented (MVP: email lookup only).
+    /// </summary>
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new { message = "Email is required." });
+
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Email == request.Email.Trim().ToLower());
+
+            if (user == null)
+                return Unauthorized(new { message = "Invalid email or password." });
+
+            var roleNames = await _dbContext.UserRoles
+                .Where(ur => ur.UserId == user.UserId)
+                .Join(_dbContext.Roles,
+                    ur => ur.RoleId,
+                    r => r.RoleId,
+                    (ur, r) => r.Name)
+                .Where(name => name != null)
+                .ToListAsync();
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim("UserId", user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+                new Claim(ClaimTypes.Email, user.Email),
+            };
+
+            foreach (var roleName in roleNames)
+                claims.Add(new Claim(ClaimTypes.Role, roleName!));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = request.RememberMe,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                });
+
+            _logger.LogInformation("Login: UserId={UserId} Email={Email}", user.UserId, user.Email);
+            return Ok(new { userId = user.UserId, name = $"{user.FirstName} {user.LastName}" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during login");
+            return StatusCode(500, new { message = "Login failed." });
+        }
+    }
+
+    /// <summary>
     /// Demo logout endpoint — signs out and redirects to login page
     /// </summary>
     [HttpGet("demo-logout")]
@@ -118,4 +178,16 @@ public class AuthController : ControllerBase
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Redirect("/login");
     }
+
+    /// <summary>
+    /// Logout endpoint — signs out and redirects to login page
+    /// </summary>
+    [HttpGet("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return Redirect("/login");
+    }
+
+    public record LoginRequest(string Email, string Password, bool RememberMe);
 }

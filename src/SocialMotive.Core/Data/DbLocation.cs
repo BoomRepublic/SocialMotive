@@ -4,12 +4,12 @@ namespace SocialMotive.Core.Data
     {
         public long LocationId { get; set; }
         public int TrackerId { get; set; }
-        public float Latitude { get; set; }
-        public float Longitude { get; set; }
-        public float? AccuracyMeters { get; set; }
-        public float? AltitudeMeters { get; set; }
-        public float? SpeedKmh { get; set; }
-        public float? HeadingDegrees { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double? AccuracyMeters { get; set; }
+        public double? AltitudeMeters { get; set; }
+        public double? SpeedKmh { get; set; }
+        public double? HeadingDegrees { get; set; }
         public DateTime Timestamp { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "telerik-blazor-mcp": {
+      "type": "stdio",
+      "command": "telerik-blazor-mcp",
+      "args": [],
+      "env": {
+        "TELERIK_LICENSE_PATH": "C:\\Users\\Code\\AppData\\Roaming\\Telerik\\telerik-license.txt"
+      }
+    }
+  }
+}

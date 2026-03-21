@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SocialMotive.Core.Data;
 using SocialMotive.Core.Model.LiveMap;
+using SocialMotive.Core.Services;
 using SocialMotive.TelegramBot.Models;
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
@@ -533,22 +534,15 @@ public class TelegramUpdateHandler
                 Modified = now
             });
 
-            // Create tracker
-            dbContext.Trackers.Add(new DbTracker
-            {
-                UserId = user.UserId,
-                DisplayName = $"{state.FirstName} {state.LastName}".Trim(),
-                Email = state.Email,
-                Phone = state.MobilePhone,
-                CityId = state.CityId,
-                InviteCode = Guid.NewGuid(),
-                QrGuid = Guid.NewGuid(),
-                JoinedAt = now,
-                CreatedAt = now,
-                ModifiedAt = now
-            });
-
-            await dbContext.SaveChangesAsync(ct);
+            // Create tracker (service shares the same scoped DbContext, so it saves social account + tracker together)
+            var trackerService = scope.ServiceProvider.GetRequiredService<ITrackerService>();
+            await trackerService.CreateTrackerForUserAsync(
+                user.UserId,
+                $"{state.FirstName} {state.LastName}".Trim(),
+                state.Email,
+                state.MobilePhone,
+                state.CityId,
+                ct);
 
             _registrations.TryRemove(chatId, out _);
 
@@ -676,27 +670,32 @@ public class TelegramUpdateHandler
         var existingTracker = await dbContext.Trackers
             .FirstOrDefaultAsync(t => t.UserId == userId.Value, ct);
 
+        var trackerService = scope.ServiceProvider.GetRequiredService<ITrackerService>();
+
         if (existingTracker == null)
         {
             var user = await dbContext.Users.FindAsync([userId.Value], ct);
             if (user != null)
             {
-                dbContext.Trackers.Add(new DbTracker
-                {
-                    UserId = userId.Value,
-                    DisplayName = $"{user.FirstName} {user.LastName}".Trim(),
-                    Email = user.Email,
-                    Phone = user.MobilePhone,
-                    InviteCode = Guid.NewGuid(),
-                    QrGuid = Guid.NewGuid(),
-                    JoinedAt = DateTime.UtcNow,
-                    CreatedAt = DateTime.UtcNow,
-                    ModifiedAt = DateTime.UtcNow
-                });
+                // Save social account first so the FK is satisfied before creating the tracker
+                await dbContext.SaveChangesAsync(ct);
+                await trackerService.CreateTrackerForUserAsync(
+                    userId.Value,
+                    $"{user.FirstName} {user.LastName}".Trim(),
+                    user.Email,
+                    user.MobilePhone,
+                    null,
+                    ct);
+            }
+            else
+            {
+                await dbContext.SaveChangesAsync(ct);
             }
         }
-
-        await dbContext.SaveChangesAsync(ct);
+        else
+        {
+            await dbContext.SaveChangesAsync(ct);
+        }
 
         _logger.LogInformation("User {UserId} linked Telegram chatId {ChatId}", userId.Value, chatId);
 
@@ -766,20 +765,15 @@ public class TelegramUpdateHandler
         var loc = message.Location!;
         var now = DateTime.UtcNow;
 
-        dbContext.Locations.Add(new DbLocation
-        {
-            TrackerId = tracker.TrackerId,
-            Latitude = (float)loc.Latitude,
-            Longitude = (float)loc.Longitude,
-            AccuracyMeters = (float?)loc.HorizontalAccuracy,
-            HeadingDegrees = loc.Heading != null ? (float?)loc.Heading : null,
-            SpeedKmh = null,
-            Timestamp = now,
-            CreatedAt = now,
-            ModifiedAt = now
-        });
-
-        await dbContext.SaveChangesAsync(ct);
+        var trackerService = scope.ServiceProvider.GetRequiredService<ITrackerService>();
+        await trackerService.RecordLocationAsync(
+            tracker.TrackerId,
+            loc.Latitude,
+            loc.Longitude,
+            loc.HorizontalAccuracy,
+            loc.Heading,
+            now,
+            ct);
 
         _logger.LogDebug("Stored location for tracker {TrackerId}: {Lat}, {Lon}",
             tracker.TrackerId, loc.Latitude, loc.Longitude);
@@ -794,11 +788,11 @@ public class TelegramUpdateHandler
                 {
                     TrackerId = tracker.TrackerId,
                     DisplayName = tracker.DisplayName,
-                    Latitude = (float)loc.Latitude,
-                    Longitude = (float)loc.Longitude,
-                    AccuracyMeters = (float?)loc.HorizontalAccuracy,
+                    Latitude = loc.Latitude,
+                    Longitude = loc.Longitude,
+                    AccuracyMeters = loc.HorizontalAccuracy,
                     SpeedKmh = null,
-                    HeadingDegrees = loc.Heading != null ? (float?)loc.Heading : null,
+                    HeadingDegrees = loc.Heading,
                     Timestamp = now,
                 });
             }

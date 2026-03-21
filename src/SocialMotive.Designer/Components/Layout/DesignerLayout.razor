@@ -1,0 +1,40 @@
+@inherits LayoutComponentBase
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+
+<CascadingAuthenticationState>
+<TelerikRootComponent IconType="@IconType.Font">
+    <div class="designer-layout">
+        <nav class="designer-nav">
+            <span class="designer-brand">SocialMotive Designer</span>
+            <div class="designer-nav-links">
+                <NavLink href="/" Match="NavLinkMatch.All">Designer</NavLink>
+                <NavLink href="/assets">Assets</NavLink>
+            </div>
+            <div style="margin-left:auto; display:flex; align-items:center; gap:0.75rem;">
+                <AuthorizeView>
+                    <Authorized>
+                        <span style="font-size:0.8rem; color:var(--kendo-color-subtle-text,#94a3b8);">
+                            @context.User.FindFirst(ClaimTypes.Name)?.Value
+                        </span>
+                        <TelerikButton Size="@ThemeConstants.Button.Size.Small"
+                                       FillMode="@ThemeConstants.Button.FillMode.Flat"
+                                       OnClick="@Logout">
+                            Sign Out
+                        </TelerikButton>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </nav>
+        <main class="designer-main">
+            @Body
+        </main>
+    </div>
+</TelerikRootComponent>
+</CascadingAuthenticationState>
+
+@code {
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
+    private void Logout() => NavManager.NavigateTo("/api/auth/logout", forceLoad: true);
+}

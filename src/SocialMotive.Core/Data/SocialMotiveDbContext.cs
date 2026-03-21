@@ -43,7 +43,7 @@ namespace SocialMotive.Core.Data
         // Generator tables
         public DbSet<DbTemplate> Templates { get; set; } = null!;
         public DbSet<DbAsset> Assets { get; set; } = null!;
-        public DbSet<DbLayer> Layers { get; set; } = null!;
+
         public DbSet<DbRenderJob> RenderJobs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -139,9 +139,6 @@ namespace SocialMotive.Core.Data
             assetConfig.ToTable("GeneratorAsset");
             assetConfig.HasKey(a => a.AssetId);
 
-            var layerConfig = modelBuilder.Entity<DbLayer>();
-            layerConfig.ToTable("GeneratorLayer");
-            layerConfig.HasKey(l => l.LayerId);
 
             var renderJobConfig = modelBuilder.Entity<DbRenderJob>();
             renderJobConfig.ToTable("GeneratorRenderJob");
@@ -159,10 +156,6 @@ namespace SocialMotive.Core.Data
 
             modelBuilder.Entity<DbSetting>()
                 .HasIndex(s => s.SettingKey)
-                .IsUnique();
-
-            modelBuilder.Entity<DbTracker>()
-                .HasIndex(t => t.QrGuid)
                 .IsUnique();
 
             // ===== Foreign Key Relationships =====
@@ -249,6 +242,13 @@ namespace SocialMotive.Core.Data
                 .HasOne(t => t.Invite)
                 .WithMany(i => i.Trackers)
                 .HasForeignKey(t => t.InviteId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // VerificationCode ← Tracker (InviteVerificationCode)
+            modelBuilder.Entity<DbTracker>()
+                .HasOne(t => t.InviteVerificationCode)
+                .WithMany()
+                .HasForeignKey(t => t.InviteVerificationCodeId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             // Tracker ← Location
@@ -391,19 +391,6 @@ namespace SocialMotive.Core.Data
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Layer ← Template
-            modelBuilder.Entity<DbLayer>()
-                .HasOne(l => l.Template)
-                .WithMany(t => t.Layers)
-                .HasForeignKey(l => l.TemplateId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Layer ← Asset
-            modelBuilder.Entity<DbLayer>()
-                .HasOne(l => l.Asset)
-                .WithOne()
-                .HasForeignKey<DbLayer>(l => l.AssetId)
-                .OnDelete(DeleteBehavior.SetNull);
 
             // RenderJob ← Template
             modelBuilder.Entity<DbRenderJob>()
@@ -486,6 +473,18 @@ namespace SocialMotive.Core.Data
             modelBuilder.Entity<DbEventParticipant>()
                 .HasIndex(ep => ep.UserId);
 
+            modelBuilder.Entity<DbEventParticipant>()
+                .Property(ep => ep.HoursWorked)
+                .HasPrecision(8, 2);
+
+            modelBuilder.Entity<DbEvent>()
+                .Property(e => e.HoursEstimate)
+                .HasPrecision(8, 2);
+
+            modelBuilder.Entity<DbEventTask>()
+                .Property(et => et.HoursEstimate)
+                .HasPrecision(8, 2);
+
             modelBuilder.Entity<DbEventTaskAssignment>()
                 .HasIndex(eta => eta.EventTaskId);
 
@@ -520,11 +519,6 @@ namespace SocialMotive.Core.Data
             modelBuilder.Entity<DbAsset>()
                 .HasIndex(a => a.IsPublic);
 
-            modelBuilder.Entity<DbLayer>()
-                .HasIndex(l => l.TemplateId);
-
-            modelBuilder.Entity<DbLayer>()
-                .HasIndex(l => l.AssetId);
 
             modelBuilder.Entity<DbRenderJob>()
                 .HasIndex(r => r.TemplateId);

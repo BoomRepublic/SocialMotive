@@ -1,0 +1,403 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: system-ui, sans-serif;
+}
+
+.designer-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.designer-nav {
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    height: 3.5rem;
+    background: var(--kendo-color-surface-alt, #1e293b);
+    border-bottom: 1px solid var(--kendo-color-border, #334155);
+    flex-shrink: 0;
+}
+
+.designer-brand {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--kendo-color-on-app-surface, #e2e8f0);
+    letter-spacing: 0.01em;
+}
+
+.designer-nav-links {
+    display: flex;
+    gap: 1rem;
+    margin-left: 2rem;
+}
+
+.designer-nav-links a {
+    font-size: 0.85rem;
+    color: var(--kendo-color-subtle-text, #94a3b8);
+    text-decoration: none;
+    padding: 0.25rem 0;
+    border-bottom: 2px solid transparent;
+}
+
+.designer-nav-links a:hover,
+.designer-nav-links a.active {
+    color: var(--kendo-color-on-app-surface, #e2e8f0);
+    border-bottom-color: var(--kendo-color-primary, #6366f1);
+}
+
+.designer-main {
+    flex: 1;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* ── Designer Page ─────────────────────────────────────── */
+
+.designer-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.designer-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    height: 3rem;
+    background: var(--kendo-color-surface-alt, #1e293b);
+    border-bottom: 1px solid var(--kendo-color-border, #334155);
+    flex-shrink: 0;
+}
+
+.designer-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.designer-toolbar-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.designer-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.template-info {
+    font-size: 0.8rem;
+    color: var(--kendo-color-subtle-text, #94a3b8);
+}
+
+.designer-error {
+    font-size: 0.8rem;
+    color: var(--kendo-color-error, #f87171);
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.designer-body {
+    flex: 1;
+    overflow: hidden;
+}
+
+.designer-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 1rem;
+    color: var(--kendo-color-subtle-text, #94a3b8);
+}
+
+/* ── Canvas ────────────────────────────────────────────── */
+
+.designer-canvas-wrap {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
+    overflow: auto;
+    padding: 24px;
+    background: var(--kendo-color-app-surface, #0f172a);
+}
+
+.designer-canvas {
+    position: relative;
+    background-color: #ffffff;
+    background-image:
+        linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+        linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+        linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    flex-shrink: 0;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+.canvas-layer {
+    position: absolute;
+    box-sizing: border-box;
+}
+
+.canvas-layer-selected {
+    outline: 2px solid var(--kendo-color-primary, #6366f1);
+    outline-offset: 1px;
+}
+
+.canvas-layer-dragging {
+    opacity: 0.85;
+}
+
+/* ── Resize Handles ───────────────────────────────────── */
+
+.layer-resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--kendo-color-primary, #6366f1);
+    border: 1px solid #fff;
+    border-radius: 2px;
+    z-index: 10;
+}
+
+.layer-resize-handle[data-handle="nw"] { top: -5px; left: -5px; cursor: nw-resize; }
+.layer-resize-handle[data-handle="n"]  { top: -5px; left: calc(50% - 5px); cursor: n-resize; }
+.layer-resize-handle[data-handle="ne"] { top: -5px; right: -5px; cursor: ne-resize; }
+.layer-resize-handle[data-handle="e"]  { top: calc(50% - 5px); right: -5px; cursor: e-resize; }
+.layer-resize-handle[data-handle="se"] { bottom: -5px; right: -5px; cursor: se-resize; }
+.layer-resize-handle[data-handle="s"]  { bottom: -5px; left: calc(50% - 5px); cursor: s-resize; }
+.layer-resize-handle[data-handle="sw"] { bottom: -5px; left: -5px; cursor: sw-resize; }
+.layer-resize-handle[data-handle="w"]  { top: calc(50% - 5px); left: -5px; cursor: w-resize; }
+
+/* ── Rotate Handle ────────────────────────────────────── */
+
+.layer-rotate-handle {
+    position: absolute;
+    top: -28px;
+    left: calc(50% - 7px);
+    width: 14px;
+    height: 14px;
+    background: var(--kendo-color-primary, #6366f1);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: grab;
+    z-index: 10;
+}
+
+.layer-rotate-handle::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 5px;
+    width: 2px;
+    height: 14px;
+    background: var(--kendo-color-primary, #6366f1);
+}
+
+.layer-rotate-handle:active { cursor: grabbing; }
+
+.canvas-axis-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* ── Left Panel ────────────────────────────────────────── */
+
+.panel-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--kendo-color-subtle-text, #94a3b8);
+    border-bottom: 1px solid var(--kendo-color-border, #334155);
+    flex-shrink: 0;
+}
+
+.panel-footer {
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--kendo-color-border, #334155);
+    flex-shrink: 0;
+}
+
+.panel-empty {
+    padding: 1rem 0.75rem;
+    font-size: 0.85rem;
+    color: var(--kendo-color-subtle-text, #94a3b8);
+}
+
+.layer-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.designer-layer-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--kendo-color-border, #1e293b);
+    user-select: none;
+}
+
+.designer-layer-item:hover {
+    background: var(--kendo-color-surface-hover, #1e293b);
+}
+
+.designer-layer-item.selected {
+    background: var(--kendo-color-primary-subtle, #1e1b4b);
+    border-left: 3px solid var(--kendo-color-primary, #6366f1);
+}
+
+.designer-layer-item.layer-hidden {
+    opacity: 0.5;
+}
+
+.designer-layer-item.drag-over {
+    border-top: 2px solid var(--kendo-color-primary, #6366f1);
+}
+
+.layer-type-badge {
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: var(--kendo-color-surface-alt, #334155);
+    color: var(--kendo-color-on-app-surface, #e2e8f0);
+    padding: 2px 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: center;
+}
+
+.layer-name {
+    flex: 1;
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.layer-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.layer-actions .k-button {
+    padding: 2px;
+    min-width: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.layer-actions .k-svg-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* ── Add Layer Menu ────────────────────────────────────── */
+
+.add-layer-wrap {
+    position: relative;
+}
+
+.add-layer-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    background: var(--kendo-color-surface, #1e293b);
+    border: 1px solid var(--kendo-color-border, #334155);
+    border-radius: 4px;
+    min-width: 130px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.add-layer-item {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-transform: capitalize;
+}
+
+.add-layer-item:hover {
+    background: var(--kendo-color-surface-hover, #334155);
+}
+
+/* ── Properties Panel ──────────────────────────────────── */
+
+.prop-group {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--kendo-color-border, #1e293b);
+}
+
+.prop-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    min-height: 28px;
+}
+
+.prop-row label {
+    flex-shrink: 0;
+    width: 72px;
+    font-size: 0.78rem;
+    color: var(--kendo-color-subtle-text, #94a3b8);
+    white-space: nowrap;
+}
+
+.prop-row > :last-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.prop-value {
+    font-size: 0.82rem;
+    color: var(--kendo-color-on-app-surface, #e2e8f0);
+}
+
+.prop-details {
+    padding: 0.25rem 0.75rem;
+}
+
+.prop-details summary {
+    font-size: 0.78rem;
+    color: var(--kendo-color-subtle-text, #94a3b8);
+    cursor: pointer;
+    padding: 0.25rem 0;
+    user-select: none;
+}
+
+.prop-footer {
+    padding: 0.5rem 0.75rem;
+}

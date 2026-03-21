@@ -5,7 +5,7 @@ namespace SocialMotive.Core.Model.Admin
 {
     /// <summary>
     /// DTO for updating Tracker from admin edit page
-    /// Excludes read-only fields like TrackerId, CreatedAt, JoinedAt, QrGuid, InviteCode
+    /// Excludes read-only fields like TrackerId, CreatedAt, JoinedAt
     /// </summary>
     [SwaggerSchema("AdminTrackerUpdateRequest")]
     public class TrackerUpdateRequest
@@ -49,5 +49,9 @@ namespace SocialMotive.Core.Model.Admin
         public int? InviteId { get; set; }
 
         public int? UserId { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public bool IsLive { get; set; }
     }
 }

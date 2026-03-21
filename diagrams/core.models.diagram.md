@@ -112,10 +112,8 @@ classDiagram
         +string? Email
         +string? Mobile
         +string? LicensePlate
-        +Guid InviteCode
         +string? InviteName
         +int? InvitedBy_TrackerId
-        +Guid QrGuid
         +DateTime JoinedAt
         +DateTime CreatedAt
         +DateTime ModifiedAt
@@ -128,6 +126,9 @@ classDiagram
         +bool? IsAdmin
         +int? InviteId
         +int? UserId
+        +bool IsActive
+        +bool IsLive
+        +DateTime? LastUpdateReceivedAt
     }
 
     class TrackerRole {

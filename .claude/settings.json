@@ -1,4 +1,5 @@
 {
+  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "Bash(dotnet run:*)",
@@ -13,7 +14,15 @@
       "Bash(powershell -Command \"& ''''C:\\\\Windows\\\\System32\\\\inetsrv\\\\appcmd.exe'''' stop apppool /apppool.name:''''telegram.socialmotive.nl''''\")",
       "Bash(dotnet publish:*)",
       "Bash(powershell -Command \"& ''''C:\\\\Windows\\\\System32\\\\inetsrv\\\\appcmd.exe'''' start apppool /apppool.name:''''telegram.socialmotive.nl''''\")",
-      "Bash(C:/Windows/System32/inetsrv/appcmd.exe stop:*)"
+      "Bash(C:/Windows/System32/inetsrv/appcmd.exe stop:*)",
+      "Bash(claude mcp:*)",
+      "Read(//c/Repos/SocialMotive/$HOME/.claude/**)",
+      "Read(//c/Users/Code/.claude/**)",
+      "Bash(powershell -Command \"claude mcp add telerik-blazor-mcp --scope project -- telerik-blazor-mcp\")",
+      "Bash(powershell -Command \"Get-Command claude -ErrorAction SilentlyContinue | Select-Object Source\")",
+      "Read(//c/Repos/SocialMotive/$LOCALAPPDATA/Programs/**)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
     ]
   }
 }

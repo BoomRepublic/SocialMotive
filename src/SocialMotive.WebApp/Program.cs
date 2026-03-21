@@ -66,7 +66,13 @@ builder.Services.AddDbContext<SocialMotiveDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SocialMotive")));
 
 // Add AutoMapper profiles from Core assembly
-builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(AdminMappingProfile).Assembly));
+builder.Services.AddAutoMapper(cfg =>
+{
+    var license = builder.Configuration["Licenses:AutoMapper"];
+    if (!string.IsNullOrEmpty(license))
+        cfg.LicenseKey = license;
+    cfg.AddMaps(typeof(AdminMappingProfile).Assembly);
+});
 
 // Persist DataProtection keys to a shared directory so cookies issued here are valid in TelegramBot.
 var keysPath = builder.Configuration["DataProtection:KeysPath"]

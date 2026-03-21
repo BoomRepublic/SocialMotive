@@ -1,5 +1,4 @@
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +7,7 @@ using SocialMotive.Core.Authorization;
 using SocialMotive.Core.Model.Generator;
 using SocialMotive.Core.Data;
 using SocialMotive.Core.Data.Generator;
+using SocialMotive.Core.Generator;
 
 namespace SocialMotive.Core.Controllers
 {
@@ -45,10 +45,8 @@ namespace SocialMotive.Core.Controllers
         {
             try
             {
-                var templates = await _dbContext.Templates
-                    .ProjectTo<TemplateSummary>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-
+                var entities = await _dbContext.Templates.ToListAsync();
+                var templates = _mapper.Map<List<TemplateSummary>>(entities);
                 return Ok(templates);
             }
             catch (Exception ex)
@@ -67,7 +65,6 @@ namespace SocialMotive.Core.Controllers
             try
             {
                 var template = await _dbContext.Templates
-                    .Include(t => t.Layers)
                     .FirstOrDefaultAsync(t => t.TemplateId == id);
 
                 if (template == null)
@@ -90,11 +87,20 @@ namespace SocialMotive.Core.Controllers
         {
             try
             {
-                var template = _mapper.Map<DbTemplate>(request);
-                template.IsPublished = false;
-                template.IsTemplate = true;
-                template.CreatedAt = DateTime.UtcNow;
-                template.UpdatedAt = DateTime.UtcNow;
+                var template = new DbTemplate
+                {
+                    Name = request.Name,
+                    Description = request.Description,
+                    Width = request.Width,
+                    Height = request.Height,
+                    Tags = request.Tags,
+                    Category = request.Category,
+                    IsPublished = false,
+                    IsTemplate = true,
+                    TemplateJson = TemplateJsonHelper.Serialize(new TemplateData()),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
                 _dbContext.Templates.Add(template);
                 await _dbContext.SaveChangesAsync();
@@ -124,9 +130,10 @@ namespace SocialMotive.Core.Controllers
                 if (request.Description != null) template.Description = request.Description;
                 if (request.Width.HasValue) template.Width = request.Width.Value;
                 if (request.Height.HasValue) template.Height = request.Height.Value;
-                if (request.IsPublished.HasValue) template.IsPublished = request.IsPublished.Value;
                 if (request.Tags != null) template.Tags = request.Tags;
                 if (request.Category != null) template.Category = request.Category;
+                if (request.IsPublished.HasValue) template.IsPublished = request.IsPublished.Value;
+
                 template.UpdatedAt = DateTime.UtcNow;
 
                 _dbContext.Templates.Update(template);
@@ -177,10 +184,8 @@ namespace SocialMotive.Core.Controllers
         {
             try
             {
-                var assets = await _dbContext.Assets
-                    .ProjectTo<Asset>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-
+                var entities = await _dbContext.Assets.ToListAsync();
+                var assets = _mapper.Map<List<Asset>>(entities);
                 return Ok(assets);
             }
             catch (Exception ex)
@@ -293,121 +298,29 @@ namespace SocialMotive.Core.Controllers
         #region Layers
 
         /// <summary>
-        /// Get layers for a template
+        /// Update all layers for a template (full replacement)
         /// </summary>
-        [HttpGet("templates/{templateId:int}/layers")]
-        public async Task<ActionResult<List<Layer>>> GetLayers(int templateId)
+        [HttpPut("templates/{id:int}/layers")]
+        public async Task<ActionResult<TemplateDetail>> UpdateTemplateLayers(int id, [FromBody] List<Layer> layers)
         {
             try
             {
-                var layers = await _dbContext.Layers
-                    .Where(l => l.TemplateId == templateId)
-                    .OrderBy(l => l.ZIndex)
-                    .ProjectTo<Layer>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-
-                return Ok(layers);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting layers for template {TemplateId}", templateId);
-                return BadRequest(new { message = "Error retrieving layers", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Get single layer by ID
-        /// </summary>
-        [HttpGet("layers/{id:int}")]
-        public async Task<ActionResult<Layer>> GetLayer(int id)
-        {
-            try
-            {
-                var layer = await _dbContext.Layers.FindAsync(id);
-                if (layer == null)
+                var template = await _dbContext.Templates.FindAsync(id);
+                if (template == null)
                     return NotFound();
 
-                return Ok(_mapper.Map<Layer>(layer));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting layer {LayerId}", id);
-                return BadRequest(new { message = "Error retrieving layer", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Create new layer
-        /// </summary>
-        [HttpPost("layers")]
-        public async Task<ActionResult<Layer>> CreateLayer([FromBody] Layer Layer)
-        {
-            try
-            {
-                var layer = _mapper.Map<DbLayer>(Layer);
-                layer.CreatedAt = DateTime.UtcNow;
-                layer.UpdatedAt = DateTime.UtcNow;
-
-                _dbContext.Layers.Add(layer);
+                var data = TemplateJsonHelper.Deserialize(template.TemplateJson);
+                data.Layers = layers;
+                template.TemplateJson = TemplateJsonHelper.Serialize(data);
+                template.UpdatedAt = DateTime.UtcNow;
                 await _dbContext.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetLayer), new { id = layer.LayerId }, _mapper.Map<Layer>(layer));
+                return Ok(_mapper.Map<TemplateDetail>(template));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating layer");
-                return BadRequest(new { message = "Error creating layer", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Update layer
-        /// </summary>
-        [HttpPut("layers/{id:int}")]
-        public async Task<ActionResult<Layer>> UpdateLayer(int id, [FromBody] Layer Layer)
-        {
-            try
-            {
-                var layer = await _dbContext.Layers.FindAsync(id);
-                if (layer == null)
-                    return NotFound();
-
-                _mapper.Map(Layer, layer);
-                layer.UpdatedAt = DateTime.UtcNow;
-
-                _dbContext.Layers.Update(layer);
-                await _dbContext.SaveChangesAsync();
-
-                return Ok(_mapper.Map<Layer>(layer));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating layer {LayerId}", id);
-                return BadRequest(new { message = "Error updating layer", error = ex.Message });
-            }
-        }
-
-        /// <summary>
-        /// Delete layer
-        /// </summary>
-        [HttpDelete("layers/{id:int}")]
-        public async Task<IActionResult> DeleteLayer(int id)
-        {
-            try
-            {
-                var layer = await _dbContext.Layers.FindAsync(id);
-                if (layer == null)
-                    return NotFound();
-
-                _dbContext.Layers.Remove(layer);
-                await _dbContext.SaveChangesAsync();
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting layer {LayerId}", id);
-                return BadRequest(new { message = "Error deleting layer", error = ex.Message });
+                _logger.LogError(ex, "Error updating layers for template {TemplateId}", id);
+                return BadRequest(new { message = "Error updating layers", error = ex.Message });
             }
         }
 
@@ -423,10 +336,8 @@ namespace SocialMotive.Core.Controllers
         {
             try
             {
-                var renderJobs = await _dbContext.RenderJobs
-                    .ProjectTo<RenderJobStatus>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
-
+                var entities = await _dbContext.RenderJobs.ToListAsync();
+                var renderJobs = _mapper.Map<List<RenderJobStatus>>(entities);
                 return Ok(renderJobs);
             }
             catch (Exception ex)

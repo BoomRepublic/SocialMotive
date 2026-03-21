@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using SocialMotive.Core.Data;
 using SocialMotive.Core.Model.LiveMap;
-using SocialMotive.LiveMap.Services;
+using SocialMotive.Core.Services;
 
 namespace SocialMotive.LiveMap.Hubs;
 
@@ -10,54 +8,40 @@ namespace SocialMotive.LiveMap.Hubs;
 /// SignalR hub for broadcasting tracker locations to connected map clients.
 /// On connect, sends the current snapshot so the client sees all markers immediately.
 /// </summary>
-public class LocationHub : Hub
+public class LocationHub(LocationCacheService cache, IServiceScopeFactory scopeFactory) : Hub
 {
-    private readonly LocationCacheService _cache;
-    private readonly IServiceScopeFactory _scopeFactory;
-
-    public LocationHub(LocationCacheService cache, IServiceScopeFactory scopeFactory)
-    {
-        _cache = cache;
-        _scopeFactory = scopeFactory;
-    }
-
     public override async Task OnConnectedAsync()
     {
-        var snapshot = _cache.GetAll();
+        var snapshot = cache.GetAll();
 
         // If cache is empty (first client after app start), load from DB
         if (snapshot.Count == 0)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<SocialMotiveDbContext>();
-
-            // Query latest location per tracker using a join to avoid subquery cast issues
-            snapshot = await (
-                from t in db.Trackers
-                join l in db.Locations on t.TrackerId equals l.TrackerId
-                where l.LocationId == db.Locations
-                    .Where(loc => loc.TrackerId == t.TrackerId)
-                    .OrderByDescending(loc => loc.Timestamp)
-                    .Select(loc => loc.LocationId)
-                    .FirstOrDefault()
-                select new TrackerLocation
-                {
-                    TrackerId = t.TrackerId,
-                    DisplayName = t.DisplayName,
-                    Latitude = l.Latitude,
-                    Longitude = l.Longitude,
-                    AccuracyMeters = l.AccuracyMeters,
-                    SpeedKmh = l.SpeedKmh,
-                    HeadingDegrees = l.HeadingDegrees,
-                    Timestamp = l.Timestamp,
-                })
-                .AsNoTracking()
-                .ToListAsync();
-
-            _cache.LoadSnapshot(snapshot);
+            using var scope = scopeFactory.CreateScope();
+            var trackerService = scope.ServiceProvider.GetRequiredService<ITrackerService>();
+            snapshot = await trackerService.GetLatestLocationsForActiveTrackersAsync();
+            cache.LoadSnapshot(snapshot);
         }
 
         await Clients.Caller.SendAsync("ReceiveLocations", snapshot);
         await base.OnConnectedAsync();
+    }
+
+    /// <summary>
+    /// Returns the current location snapshot. Clients can invoke this after
+    /// the connection is fully established to reliably get the initial markers.
+    /// Loads from DB if the cache is empty (race with OnConnectedAsync).
+    /// </summary>
+    public async Task<List<TrackerLocation>> GetLocations()
+    {
+        var locations = cache.GetAll();
+        if (locations.Count > 0)
+            return locations;
+
+        using var scope = scopeFactory.CreateScope();
+        var trackerService = scope.ServiceProvider.GetRequiredService<ITrackerService>();
+        locations = await trackerService.GetLatestLocationsForActiveTrackersAsync();
+        cache.LoadSnapshot(locations);
+        return locations;
     }
 }

@@ -38,9 +38,8 @@ namespace SocialMotive.Core.Mapping
             CreateMap<DbTracker, Tracker>();
 
             CreateMap<Tracker, DbTracker>()
-                .ForMember(d => d.InviteCode, opt => opt.Ignore())
                 .ForMember(d => d.InviteName, opt => opt.Ignore())
-                .ForMember(d => d.QrGuid, opt => opt.Ignore())
+                .ForMember(d => d.LastUpdateReceivedAt, opt => opt.Ignore())
                 .ForMember(d => d.CheckInTime, opt => opt.Ignore())
                 .ForMember(d => d.CheckInLat, opt => opt.Ignore())
                 .ForMember(d => d.CheckInLon, opt => opt.Ignore())
@@ -60,8 +59,7 @@ namespace SocialMotive.Core.Mapping
 
             CreateMap<TrackerUpdateRequest, DbTracker>()
                 .ForMember(d => d.TrackerId, opt => opt.Ignore())
-                .ForMember(d => d.InviteCode, opt => opt.Ignore())
-                .ForMember(d => d.QrGuid, opt => opt.Ignore())
+                .ForMember(d => d.LastUpdateReceivedAt, opt => opt.Ignore())
                 .ForMember(d => d.JoinedAt, opt => opt.Ignore())
                 .ForMember(d => d.CreatedAt, opt => opt.Ignore())
                 .ForMember(d => d.ModifiedAt, opt => opt.Ignore())
